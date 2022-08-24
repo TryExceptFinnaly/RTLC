@@ -8,32 +8,45 @@ from config import Config
 config = Config('config.ini')
 config.load()
 
-if not os.path.exists('config.ini'):
-    print('Файл config.ini не найден, введите данные для создания конфигурационного файла.')
-    
-    remotePath = input('Введите remotePath(default = "./"): ')
-    if remotePath:
-        config.remotePath = remotePath
-        
-    localPath = input('Введите localPath(default = "./local"): ')
-    if localPath:
-        config.localPath = localPath
-        
-    startDate = input('Введите дату старта <yyyy-mm-dd>(default = 2000-01-01): ')
-    if startDate:
-         config.startDate = startDate
-         
+if not os.path.exists(config.ini):
+    print(
+        f'[WARNING]: Файл config.ini не найден, отредактируйте созданный конфигурационный файл ("{os.path.abspath(config.ini)}").'
+    )
     config.save()
+    exit()
 
 remotePath = config.remotePath
 localPath = config.localPath
+
+notPath = False
+
+if not os.path.exists(remotePath):
+    print(f'[ERROR]: Удаленный каталог "{remotePath}" не найден.')
+    notPath = True
+
+if not os.path.exists(localPath):
+    print(f'[ERROR]: Локальный каталог "{localPath}" не найден.')
+    notPath = True
+
+if notPath:
+    exit()
+
+refreshTime = config.refreshTime
 startDate = config.startDate
 
 print(f'\nRemote Path: "{remotePath}"')
 print(f'Local Path: "{localPath}"')
+print(f'Refresh Time: {refreshTime}')
 print(f'Start Date: {startDate}\n')
 
-startDate = datetime.strptime(startDate, "%Y-%m-%d").timestamp()
+try:
+    startDate = datetime.strptime(startDate,
+                                  "%Y-%m-%d %H:%M:%S.%f").timestamp()
+except ValueError:
+    print(
+        f'[ERROR]: Неверная дата старта: "{startDate}", выставлена "{datetime.fromtimestamp(0.0).strftime("%Y-%m-%d %H:%M:%S.%f")}"'
+    )
+    startDate = 0.0
 
 remoteSortList = []
 
@@ -50,13 +63,16 @@ while True:
     remoteSortList = sorted(remoteSortList)
     if remoteSortList:
         startDate = remoteSortList[-1][0]
+        config.startDate = datetime.fromtimestamp(startDate).strftime(
+            "%Y-%m-%d %H:%M:%S.%f")
+        config.save()
         for file in remoteSortList[:]:  # перебрать копию списка
             try:
                 shutil.copy2(file[1], localPath)
                 print(
-                    f'    File "{file[1]} ( {datetime.fromtimestamp(file[0]).strftime("%Y-%m-%d %H:%M:%S")}, stamp: {file[0]} ) copied to local path.'
+                    f'    File "{file[1]} ( {datetime.fromtimestamp(file[0]).strftime("%Y-%m-%d %H:%M:%S.%f")} ) copied to local path.'
                 )
                 remoteSortList.remove(file)
             except Exception as exp:
                 print(exp)
-    sleep(5)
+    sleep(refreshTime)

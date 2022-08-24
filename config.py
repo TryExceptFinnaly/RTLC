@@ -6,8 +6,9 @@ class Config:
     def __init__(self, ini: str):
         self.ini = ini
         self.config = configparser.ConfigParser()
-        self.startDate: str = '2000-01-01'
-        self.remotePath: str = './'
+        self.startDate: str = '2000-01-01 00:00:00'
+        self.refreshTime: int = 60
+        self.remotePath: str = './remote'
         self.localPath: str = './local'
 
     def getstring(self, section, option, fallback):
@@ -34,16 +35,20 @@ class Config:
         self.startDate = self.getstring('Options',
                                         'start_date',
                                         fallback=self.startDate)
+        self.refreshTime = self.getint('Options',
+                                       'refresh_time',
+                                       fallback=self.refreshTime)
         self.remotePath = self.getstring('Paths',
                                          'remote',
                                          fallback=self.remotePath)
         self.localPath = self.getstring('Paths',
                                         'local',
                                         fallback=self.localPath)
-        
+
     def save(self):
         self.config['Options'] = {
-            'start_date': self.startDate
+            'start_date': self.startDate,
+            'refresh_time': self.refreshTime
         }
         self.config['Paths'] = {
             'remote': self.remotePath,
