@@ -13,6 +13,7 @@ if not os.path.exists(config.ini):
         f'[WARNING]: Файл config.ini не найден, отредактируйте созданный конфигурационный файл ("{os.path.abspath(config.ini)}").'
     )
     config.save()
+    input()
     exit()
 
 remotePath = config.remotePath
@@ -29,6 +30,7 @@ if not os.path.exists(localPath):
     notPath = True
 
 if notPath:
+    input()
     exit()
 
 refreshTime = config.refreshTime
@@ -44,9 +46,9 @@ try:
                                   "%Y-%m-%d %H:%M:%S.%f").timestamp()
 except ValueError:
     print(
-        f'[ERROR]: Неверная дата старта: "{startDate}", выставлена "{datetime.fromtimestamp(0.0).strftime("%Y-%m-%d %H:%M:%S.%f")}"'
+        f'[ERROR]: Неверная дата старта: "{startDate}", правильный формат: "{datetime.fromtimestamp(0.0).strftime("%Y-%m-%d %H:%M:%S.%f")}"'
     )
-    startDate = 0.0
+    exit()
 
 remoteSortList = []
 

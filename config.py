@@ -6,7 +6,7 @@ class Config:
     def __init__(self, ini: str):
         self.ini = ini
         self.config = configparser.ConfigParser()
-        self.startDate: str = '2000-01-01 00:00:00'
+        self.startDate: str = '2000-01-01 00:00:00.000000'
         self.refreshTime: int = 60
         self.remotePath: str = './remote'
         self.localPath: str = './local'
