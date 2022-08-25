@@ -12,14 +12,14 @@ logging.basicConfig(format=FORMAT,
                     filename='log.txt',
                     encoding='utf-8')
 
-logging.info('Запуск программы.')
+logging.info('Starting service...')
 
 config = Config('config.ini')
 config.load()
 
 if not os.path.exists(config.ini):
-    logging.warning(
-        f'Файл config.ini не найден, отредактируйте созданный конфигурационный файл ("{os.path.abspath(config.ini)}").'
+    logging.error(
+        f'File "config.ini" not found, modify the generated config file ("{os.path.abspath(config.ini)}").'
     )
     config.save()
     exit()
@@ -32,11 +32,11 @@ localPath = config.localPath
 notPath = False
 
 if not os.path.exists(remotePath):
-    logging.error(f'Удаленный каталог "{remotePath}" не найден.')
+    logging.error(f'Remote folder "{remotePath}" not found.')
     notPath = True
 
 if not os.path.exists(localPath):
-    logging.error(f'Локальный каталог "{localPath}" не найден.')
+    logging.error(f'Local folder "{localPath}" not found.')
     notPath = True
 
 if notPath:
@@ -45,28 +45,28 @@ if notPath:
 refreshTime = config.refreshTime
 timeStamp = config.timeStamp
 
-print(f'\nRemote Path: "{remotePath}"')
-print(f'Local Path: "{localPath}"')
-print(f'Refresh Time: {refreshTime}')
-print(f'Start Date: {config.startDate}')
-print(f'Time Stamp: {timeStamp}\n')
+logging.info(f'Remote folder: "{remotePath}"')
+logging.info(f'Local folder: "{localPath}"')
+logging.info(f'Refresh time: {refreshTime}')
+logging.info(f'Start date: {config.startDate}')
+logging.info(f'Last file: {ctime(timeStamp)} (TimeStamp: {timeStamp})')
 
 if not timeStamp:
     try:
         timeStamp = mktime(strptime(config.startDate, '%Y-%m-%d %H:%M'))
     except ValueError:
         logging.error(
-            f'Неверная дата старта: "{config.startDate}", правильный формат: "2000-01-01 00:00"'
+            f'Uncorrect start date: "{config.startDate}", correct format: "2000-01-01 00:00"'
         )
         exit()
 
 remoteSortList = []
 
-logging.info('Программа запущена.')
+logging.info('Service started.')
 
 while True:
     remoteList = os.listdir(remotePath)
-    print(f'*Refresh List*')
+    logging.info(f'Refresh')
     for file in remoteList:
         file = os.path.join(remotePath, file)
         if os.path.isdir(file):
@@ -75,6 +75,7 @@ while True:
         if getctime > timeStamp:
             remoteSortList.append((getctime, file))
     remoteSortList = sorted(remoteSortList)
+    logging.info(f'Found {len(remoteSortList)} new files.')
     if remoteSortList:
         timeStamp = remoteSortList[-1][0]
         config.timeStamp = timeStamp
@@ -83,7 +84,7 @@ while True:
             try:
                 shutil.copy2(file[1], localPath)
                 logging.info(
-                    f'File "{file[1]}" ( {ctime(file[0])} ) {file[0]} copied to local path.'
+                    f'File "{file[1]}" ( {ctime(file[0])} ) {file[0]} copied to local folder.'
                 )
                 remoteSortList.remove(file)
             except Exception as exp:

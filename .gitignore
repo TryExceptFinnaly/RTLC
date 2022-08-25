@@ -5,3 +5,4 @@
 config.ini
 dist\config.ini
 log.txt
+dist\log.txt
