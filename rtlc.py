@@ -1,6 +1,5 @@
 #Remote To Local Copy(RTLC)
-from datetime import datetime
-from time import sleep
+from time import sleep, ctime, mktime, strptime
 import os, shutil
 
 from config import Config
@@ -15,6 +14,8 @@ if not os.path.exists(config.ini):
     config.save()
     input()
     exit()
+
+config.save()
 
 remotePath = config.remotePath
 localPath = config.localPath
@@ -34,45 +35,46 @@ if notPath:
     exit()
 
 refreshTime = config.refreshTime
-startDate = config.startDate
+timeStamp = config.timeStamp
 
 print(f'\nRemote Path: "{remotePath}"')
 print(f'Local Path: "{localPath}"')
 print(f'Refresh Time: {refreshTime}')
-print(f'Start Date: {startDate}\n')
+print(f'Start Date: {config.startDate}')
+print(f'Time Stamp: {timeStamp}\n')
 
-try:
-    startDate = datetime.strptime(startDate,
-                                  "%Y-%m-%d %H:%M:%S.%f").timestamp()
-except ValueError:
-    print(
-        f'[ERROR]: Неверная дата старта: "{startDate}", правильный формат: "{datetime.fromtimestamp(0.0).strftime("%Y-%m-%d %H:%M:%S.%f")}"'
-    )
-    exit()
+if not timeStamp:
+    try:
+        timeStamp = mktime(strptime(config.startDate, '%Y-%m-%d %H:%M'))
+    except ValueError:
+        print(
+            f'[ERROR]: Неверная дата старта: "{config.startDate}", правильный формат: "2000-01-01 00:00"'
+        )
+        input()
+        exit()
 
 remoteSortList = []
 
 while True:
     remoteList = os.listdir(remotePath)
-    print(f'*remoteList:')
+    print(f'*Refresh List*')
     for file in remoteList:
         file = os.path.join(remotePath, file)
         if os.path.isdir(file):
             continue
         getctime = os.path.getctime(file)
-        if getctime > startDate:
+        if getctime > timeStamp:
             remoteSortList.append((getctime, file))
     remoteSortList = sorted(remoteSortList)
     if remoteSortList:
-        startDate = remoteSortList[-1][0]
-        config.startDate = datetime.fromtimestamp(startDate).strftime(
-            "%Y-%m-%d %H:%M:%S.%f")
+        timeStamp = remoteSortList[-1][0]
+        config.timeStamp = timeStamp
         config.save()
         for file in remoteSortList[:]:  # перебрать копию списка
             try:
                 shutil.copy2(file[1], localPath)
                 print(
-                    f'    File "{file[1]} ( {datetime.fromtimestamp(file[0]).strftime("%Y-%m-%d %H:%M:%S.%f")} ) copied to local path.'
+                    f'    {ctime()}: File "{file[1]}" ( {ctime(file[0])} ) {file[0]} copied to local path.'
                 )
                 remoteSortList.remove(file)
             except Exception as exp:
