@@ -6,7 +6,7 @@ import shutil
 
 from config import Config
 
-FORMAT = '[%(levelname)s][%(asctime)s]: %(message)s'
+FORMAT = '[%(asctime)s]: %(levelname)s %(message)s'
 logging.basicConfig(format=FORMAT,
                     level='INFO',
                     filename='log.txt',
