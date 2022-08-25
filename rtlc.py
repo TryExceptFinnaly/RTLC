@@ -1,24 +1,41 @@
 #Remote To Local Copy(RTLC)
 import logging
+import logging.handlers
 from time import sleep, mktime, strptime, strftime, gmtime
 import os
 import shutil
 
 from config import Config
 
-FORMAT = '[%(asctime)s]: %(levelname)s %(message)s'
-logging.basicConfig(format=FORMAT,
-                    level='INFO',
-                    filename='log.txt',
-                    encoding='utf-8')
-
-logging.info('Starting service...')
+FORMAT = '[%(asctime)s]: %(levelname)s - %(message)s'
+LEVEL_LOGS = 'INFO'
+FOLDER_LOGS = 'Logs'
+NAME_LOG = 'rtlc.log'
+SIZE_LOG = 1024 * 1024
+COUNT_BACKUP_LOGS = 5
 
 config = Config('config.ini')
 config.load()
 
+if not os.path.exists(FOLDER_LOGS):
+    os.mkdir(FOLDER_LOGS)
+
+logging.basicConfig(level=LEVEL_LOGS, handlers='')
+
+mainLog = logging.getLogger('main')
+
+mainHandler = logging.handlers.RotatingFileHandler(
+    f'{FOLDER_LOGS}\{NAME_LOG}',
+    maxBytes=SIZE_LOG,
+    backupCount=COUNT_BACKUP_LOGS,
+    encoding='utf-8')
+mainHandler.setFormatter(logging.Formatter(FORMAT))
+
+mainLog.addHandler(mainHandler)
+mainLog.info('Starting service...')
+
 if not os.path.exists(config.ini):
-    logging.error(
+    mainLog.warning(
         f'File "config.ini" not found, modify the generated config file ("{os.path.abspath(config.ini)}").'
     )
     config.save()
@@ -32,11 +49,11 @@ localPath = config.localPath
 notPath = False
 
 if not os.path.exists(remotePath):
-    logging.error(f'Remote folder "{remotePath}" not found.')
+    mainLog.error(f'Remote folder "{remotePath}" not found.')
     notPath = True
 
 if not os.path.exists(localPath):
-    logging.error(f'Local folder "{localPath}" not found.')
+    mainLog.error(f'Local folder "{localPath}" not found.')
     notPath = True
 
 if notPath:
@@ -45,11 +62,11 @@ if notPath:
 refreshTime = config.refreshTime
 timeStamp = config.timeStamp
 
-logging.info(f'Remote folder: "{remotePath}"')
-logging.info(f'Local folder: "{localPath}"')
-logging.info(f'Refresh time: {refreshTime}')
-logging.info(f'Start date: {config.startDate}')
-logging.info(
+mainLog.info(f'Remote folder: "{remotePath}"')
+mainLog.info(f'Local folder: "{localPath}"')
+mainLog.info(f'Refresh time: {refreshTime}')
+mainLog.info(f'Start date: {config.startDate}')
+mainLog.info(
     f'Last file: {strftime("%Y-%m-%d %H:%M:%S", gmtime(timeStamp))} (TimeStamp: {timeStamp})'
 )
 
@@ -57,18 +74,18 @@ if not timeStamp:
     try:
         timeStamp = mktime(strptime(config.startDate, '%Y-%m-%d %H:%M'))
     except ValueError:
-        logging.error(
+        mainLog.error(
             f'Uncorrect start date: "{config.startDate}", correct format: "2000-01-01 00:00"'
         )
         exit()
 
 remoteSortList = []
 
-logging.info('Service started.')
+mainLog.info('Service started.')
 
 while True:
     remoteList = os.listdir(remotePath)
-    logging.info(f'Refresh')
+    mainLog.info(f'Refresh')
     for file in remoteList:
         file = os.path.join(remotePath, file)
         if os.path.isdir(file):
@@ -77,18 +94,18 @@ while True:
         if getctime > timeStamp:
             remoteSortList.append((getctime, file))
     remoteSortList = sorted(remoteSortList)
-    logging.info(f'Found {len(remoteSortList)} new files.')
+    mainLog.info(f'Found {len(remoteSortList)} new files.')
     if remoteSortList:
         timeStamp = remoteSortList[-1][0]
         config.timeStamp = timeStamp
         for file in remoteSortList[:]:  # перебрать копию списка
             try:
                 shutil.copy2(file[1], localPath)
-                logging.info(
+                mainLog.info(
                     f'File "{file[1]}" "{strftime("%Y-%m-%d %H:%M:%S", gmtime(file[0]))} ({file[0]})" copied to local folder.'
                 )
                 remoteSortList.remove(file)
             except Exception as exc:
-                logging.warning(exc)
+                mainLog.error(exc)
         config.save()
     sleep(refreshTime)

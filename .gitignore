@@ -3,6 +3,6 @@
 /remote
 /__pycache__
 config.ini
-dist\config.ini
-log.txt
-dist\log.txt
+dist/config.ini
+/logs
+dist/logs/
