@@ -12,7 +12,7 @@ LEVEL_LOGS = 'INFO'
 FOLDER_LOGS = 'Logs'
 NAME_LOG = 'rtlc.log'
 SIZE_LOG = 1024 * 1024
-COUNT_BACKUP_LOGS = 5
+COUNT_BACKUPS_LOGS = 5
 
 config = Config('config.ini')
 config.load()
@@ -25,9 +25,9 @@ logging.basicConfig(level=LEVEL_LOGS, handlers='')
 mainLog = logging.getLogger('main')
 
 mainHandler = logging.handlers.RotatingFileHandler(
-    f'{FOLDER_LOGS}\{NAME_LOG}',
+    f'{FOLDER_LOGS}/{NAME_LOG}',
     maxBytes=SIZE_LOG,
-    backupCount=COUNT_BACKUP_LOGS,
+    backupCount=COUNT_BACKUPS_LOGS,
     encoding='utf-8')
 mainHandler.setFormatter(logging.Formatter(FORMAT))
 
@@ -105,7 +105,7 @@ while True:
                     f'File "{file[1]}" "{strftime("%Y-%m-%d %H:%M:%S", gmtime(file[0]))} ({file[0]})" copied to local folder.'
                 )
                 remoteSortList.remove(file)
-            except Exception as exc:
+            except Exception as exc: 
                 mainLog.error(exc)
         config.save()
     sleep(refreshTime)

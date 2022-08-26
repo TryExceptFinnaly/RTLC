@@ -43,7 +43,7 @@ class Config:
                                         'start_date',
                                         fallback=self.startDate)
         self.timeStamp = self.getfloat('Options',
-                                       'time_stamp',
+                                       'last_file',
                                        fallback=self.timeStamp)
         self.refreshTime = self.getint('Options',
                                        'refresh_time',
@@ -58,7 +58,7 @@ class Config:
     def save(self):
         self.config['Options'] = {
             'start_date': self.startDate,
-            'time_stamp': self.timeStamp,
+            'last_file': self.timeStamp,
             'refresh_time': self.refreshTime
         }
         self.config['Paths'] = {
