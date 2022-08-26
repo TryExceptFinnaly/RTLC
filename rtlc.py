@@ -7,31 +7,39 @@ import shutil
 
 from config import Config
 
-FORMAT = '[%(asctime)s]: %(levelname)s - %(message)s'
-LEVEL_LOGS = 'INFO'
-FOLDER_LOGS = 'Logs'
-NAME_LOG = 'rtlc.log'
-SIZE_LOG = 1024 * 1024
-COUNT_BACKUPS_LOGS = 5
-
 config = Config('config.ini')
 config.load()
+
+FORMAT = '[%(asctime)s]: %(levelname)s - %(message)s'
+FOLDER_LOGS = 'Logs'
+NAME_LOG = 'rtlc.log'
 
 if not os.path.exists(FOLDER_LOGS):
     os.mkdir(FOLDER_LOGS)
 
-logging.basicConfig(level=LEVEL_LOGS, handlers='')
+logging.basicConfig(handlers='')
 
-mainLog = logging.getLogger('main')
+SIZE_LOG = config.logsSize * 1024 * 1024
 
 mainHandler = logging.handlers.RotatingFileHandler(
     f'{FOLDER_LOGS}/{NAME_LOG}',
     maxBytes=SIZE_LOG,
-    backupCount=COUNT_BACKUPS_LOGS,
+    backupCount=config.logsBackups,
     encoding='utf-8')
 mainHandler.setFormatter(logging.Formatter(FORMAT))
 
+mainLog = logging.getLogger('rltc')
 mainLog.addHandler(mainHandler)
+
+if config.logsLevel not in [
+        'NOTSET', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'
+]:
+    mainLog.error(
+        f'Uncorrect logging level: "{config.logsLevel}". Available values: "NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL".'
+    )
+    exit()
+
+mainLog.setLevel(config.logsLevel)
 mainLog.info('Starting service...')
 
 if not os.path.exists(config.ini):
@@ -62,6 +70,7 @@ if notPath:
 refreshTime = config.refreshTime
 timeStamp = config.timeStamp
 
+mainLog.info(f'Logs level: {config.logsLevel}')
 mainLog.info(f'Remote folder: "{remotePath}"')
 mainLog.info(f'Local folder: "{localPath}"')
 mainLog.info(f'Refresh time: {refreshTime}')
@@ -105,7 +114,7 @@ while True:
                     f'File "{file[1]}" "{strftime("%Y-%m-%d %H:%M:%S", gmtime(file[0]))} ({file[0]})" copied to local folder.'
                 )
                 remoteSortList.remove(file)
-            except Exception as exc: 
+            except Exception as exc:
                 mainLog.error(exc)
         config.save()
     sleep(refreshTime)

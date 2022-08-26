@@ -11,6 +11,9 @@ class Config:
         self.refreshTime: int = 60
         self.remotePath: str = './remote'
         self.localPath: str = './local'
+        self.logsLevel: str = 'INFO'
+        self.logsSize: int = 2
+        self.logsBackups: int = 5
 
     def getstring(self, section, option, fallback):
         string = self.config.get(section, option, fallback=fallback)
@@ -54,6 +57,13 @@ class Config:
         self.localPath = self.getstring('Paths',
                                         'local',
                                         fallback=self.localPath)
+        self.logsLevel = self.getstring('Logs',
+                                        'level',
+                                        fallback=self.logsLevel)
+        self.logsSize = self.getint('Logs', 'size', fallback=self.logsSize)
+        self.logsBackups = self.getint('Logs',
+                                       'backups',
+                                       fallback=self.logsBackups)
 
     def save(self):
         self.config['Options'] = {
@@ -64,6 +74,11 @@ class Config:
         self.config['Paths'] = {
             'remote': self.remotePath,
             'local': self.localPath
+        }
+        self.config['Logs'] = {
+            'level': self.logsLevel,
+            'size': self.logsSize,
+            'backups': self.logsBackups
         }
         with open(self.ini, 'w') as configfile:
             try:
