@@ -9,6 +9,7 @@ class Config:
         self.startDate: str = '2000-01-01 00:00'
         self.timeStamp: float = 0.0
         self.refreshTime: int = 60
+        self.extensionFile: str = ''
         self.remotePath: str = './remote'
         self.localPath: str = './local'
         self.logsLevel: str = 'INFO'
@@ -51,6 +52,9 @@ class Config:
         self.refreshTime = self.getint('Options',
                                        'refresh_time',
                                        fallback=self.refreshTime)
+        self.extensionFile = self.getstring('Options',
+                                            'extension_file',
+                                            fallback=self.extensionFile)
         self.remotePath = self.getstring('Paths',
                                          'remote',
                                          fallback=self.remotePath)
@@ -69,7 +73,8 @@ class Config:
         self.config['Options'] = {
             'start_date': self.startDate,
             'last_file': self.timeStamp,
-            'refresh_time': self.refreshTime
+            'refresh_time': self.refreshTime,
+            'extension_file': self.extensionFile
         }
         self.config['Paths'] = {
             'remote': self.remotePath,

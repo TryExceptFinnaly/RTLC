@@ -15,7 +15,14 @@ FOLDER_LOGS = 'Logs'
 NAME_LOG = 'rtlc.log'
 
 if not os.path.exists(FOLDER_LOGS):
-    os.mkdir(FOLDER_LOGS)
+    try:
+        os.mkdir(FOLDER_LOGS)
+    except Exception as exc:
+        print(
+            f'[RTLC ERROR]: Failed to create log directory: "{os.path.abspath(FOLDER_LOGS)}"'
+        )
+        print(f'{exc}')
+        exit()
 
 logging.basicConfig(handlers='')
 
@@ -31,6 +38,7 @@ mainHandler.setFormatter(logging.Formatter(FORMAT))
 mainLog = logging.getLogger('rltc')
 mainLog.addHandler(mainHandler)
 
+config.logsLevel = config.logsLevel.upper()
 if config.logsLevel not in [
         'NOTSET', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'
 ]:
@@ -61,7 +69,7 @@ if not os.path.exists(remotePath):
     notPath = True
 
 if not os.path.exists(localPath):
-    mainLog.error(f'Local folder "{localPath}" not found.')
+    mainLog.error(f'Local folder "{localPath}" not found.') 
     notPath = True
 
 if notPath:
@@ -69,11 +77,13 @@ if notPath:
 
 refreshTime = config.refreshTime
 timeStamp = config.timeStamp
+extensionFile = tuple(config.extensionFile.replace(' ', '').split(','))
 
 mainLog.info(f'Logs level: {config.logsLevel}')
 mainLog.info(f'Remote folder: "{remotePath}"')
 mainLog.info(f'Local folder: "{localPath}"')
 mainLog.info(f'Refresh time: {refreshTime}')
+mainLog.info(f'Extension file: {extensionFile}')
 mainLog.info(f'Start date: {config.startDate}')
 mainLog.info(
     f'Last file: {strftime("%Y-%m-%d %H:%M:%S", gmtime(timeStamp))} (TimeStamp: {timeStamp})'
@@ -100,7 +110,7 @@ while True:
         if os.path.isdir(file):
             continue
         getctime = os.path.getctime(file)
-        if getctime > timeStamp:
+        if (getctime > timeStamp) and file.endswith(extensionFile):
             remoteSortList.append((getctime, file))
     remoteSortList = sorted(remoteSortList)
     mainLog.info(f'Found {len(remoteSortList)} new files.')
