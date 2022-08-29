@@ -1,6 +1,7 @@
 #Remote To Local Copy(RTLC)
 import logging
 import logging.handlers
+from stat import ST_CTIME
 from time import sleep, mktime, strptime, strftime, gmtime
 import os
 import shutil
@@ -69,7 +70,7 @@ if not os.path.exists(remotePath):
     notPath = True
 
 if not os.path.exists(localPath):
-    mainLog.error(f'Local folder "{localPath}" not found.') 
+    mainLog.error(f'Local folder "{localPath}" not found.')
     notPath = True
 
 if notPath:
@@ -103,16 +104,13 @@ remoteSortList = []
 mainLog.info('Service started.')
 
 while True:
-    remoteList = os.listdir(remotePath)
     mainLog.info(f'Refresh')
-    for file in remoteList:
-        file = os.path.join(remotePath, file)
-        if os.path.isdir(file):
-            continue
-        getctime = os.path.getctime(file)
-        if (getctime > timeStamp) and file.endswith(extensionFile):
-            remoteSortList.append((getctime, file))
-    remoteSortList = sorted(remoteSortList)
+    with os.scandir(remotePath) as scanDir:
+        for entry in scanDir:
+            if entry.is_file(follow_symlinks=False) and entry.name.endswith(
+                    extensionFile) and (entry.stat().st_ctime > timeStamp):
+                remoteSortList.append((entry.stat().st_ctime, entry.path))
+        remoteSortList = sorted(remoteSortList)
     mainLog.info(f'Found {len(remoteSortList)} new files.')
     if remoteSortList:
         timeStamp = remoteSortList[-1][0]
