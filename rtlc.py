@@ -4,6 +4,7 @@ import logging.handlers
 from time import sleep, mktime, strptime, strftime, gmtime
 import os
 import shutil
+from unittest import result
 
 from config import Config
 
@@ -52,9 +53,11 @@ mainLog.info('Starting service...')
 
 if not os.path.exists(config.ini):
     mainLog.warning(
-        f'File "config.ini" not found, modify the generated config file ("{os.path.abspath(config.ini)}").'
+        f'File "{config.ini}" not found, modify the generated config file ("{os.path.abspath(config.ini)}").'
     )
-    config.save()
+    result = config.save()
+    print(result)
+    mainLog.info(result)
     exit()
 
 config.save()

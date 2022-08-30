@@ -69,7 +69,7 @@ class Config:
                                        'backups',
                                        fallback=self.logsBackups)
 
-    def save(self):
+    def save(self) -> str:
         self.config['Options'] = {
             'start_date': self.startDate,
             'last_file': self.timeStamp,
@@ -85,8 +85,9 @@ class Config:
             'size': self.logsSize,
             'backups': self.logsBackups
         }
-        with open(self.ini, 'w') as configfile:
-            try:
+        try:
+            with open(self.ini, 'w') as configfile:
                 self.config.write(configfile)
-            except OSError:
-                print(f'[CONFIG]: Error save file: {self.ini}')
+                return ('Building configuration file completed successfully.')
+        except Exception as exc:
+            return (f'Error building configuration file "{exc}": {self.ini}')
