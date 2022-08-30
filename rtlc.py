@@ -1,7 +1,6 @@
 #Remote To Local Copy(RTLC)
 import logging
 import logging.handlers
-from stat import ST_CTIME
 from time import sleep, mktime, strptime, strftime, gmtime
 import os
 import shutil
@@ -100,7 +99,6 @@ if not timeStamp:
         exit()
 
 remoteSortList = []
-
 mainLog.info('Service started.')
 
 while True:
@@ -114,7 +112,6 @@ while True:
     mainLog.info(f'Found {len(remoteSortList)} new files.')
     if remoteSortList:
         timeStamp = remoteSortList[-1][0]
-        config.timeStamp = timeStamp
         for file in remoteSortList[:]:  # перебрать копию списка
             try:
                 shutil.copy2(file[1], localPath)
@@ -123,6 +120,8 @@ while True:
                 )
                 remoteSortList.remove(file)
             except Exception as exc:
-                mainLog.error(exc)
+                mainLog.error(
+                    f"File '{file[1]}' not copied to local folder: {exc}")
+        config.timeStamp = timeStamp
         config.save()
     sleep(refreshTime)
