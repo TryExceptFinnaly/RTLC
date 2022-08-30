@@ -4,7 +4,6 @@ import logging.handlers
 from time import sleep, mktime, strptime, strftime, gmtime
 import os
 import shutil
-from unittest import result
 
 from config import Config
 
@@ -57,7 +56,6 @@ if not os.path.exists(config.ini):
     )
     result = config.save()
     print(result)
-    mainLog.info(result)
     exit()
 
 config.save()
