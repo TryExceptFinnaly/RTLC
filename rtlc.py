@@ -1,9 +1,11 @@
 #Remote To Local Copy(RTLC)
 import logging
 import logging.handlers
-from time import sleep, mktime, strptime, strftime, gmtime
 import os
 import shutil
+
+from uuid import uuid4
+from time import sleep, mktime, strptime, strftime, gmtime
 
 from config import Config
 
@@ -105,9 +107,9 @@ def scandir(path: str, list: list):
         for entry in scanDir:
             if entry.is_dir(follow_symlinks=False):
                 scandir(entry.path, list)
-            if entry.is_file(follow_symlinks=False) and entry.name.endswith(
+            elif entry.is_file(follow_symlinks=False) and entry.name.endswith(
                     extensionFile) and (entry.stat().st_ctime > timeStamp):
-                list.append((entry.stat().st_ctime, entry.path, entry.name))
+                list.append((entry.stat().st_ctime, entry.path))
 
 
 remoteList = []
@@ -117,19 +119,20 @@ while True:
     mainLog.info(f'Refresh')
     scandir(remotePath, remoteList)
     remoteList = sorted(remoteList)
-    mainLog.info(f'Found {len(remoteList)} new files.')
+    mainLog.info(f'Found {len(remoteList)} files to copy.')
     if remoteList:
         timeStamp = remoteList[-1][0]
         for file in remoteList[:]:  # перебрать копию списка
             try:
-                shutil.copy2(f'{file[1]}', f'{localPath}/{file[0]}_{file[2]}')
+                newName = f'{uuid4()}{os.path.splitext(file[1])[1]}'
+                shutil.copy2(f'{file[1]}', f'{localPath}/{newName}')
                 mainLog.info(
-                    f'File "{file[1]}" "{strftime("%Y-%m-%d %H:%M:%S", gmtime(file[0]))} ({file[0]})" copied to local folder.'
+                    f'File "{newName} << {file[1]}" "{strftime("%Y-%m-%d %H:%M:%S", gmtime(file[0]))} ({file[0]})" copied to local folder.'
                 )
                 remoteList.remove(file)
             except Exception as exc:
                 mainLog.error(
                     f"File '{file[1]}' not copied to local folder: {exc}")
         config.timeStamp = timeStamp
-        # config.save()
+        config.save()
     sleep(refreshTime)
