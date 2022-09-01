@@ -88,6 +88,6 @@ class Config:
         try:
             with open(self.ini, 'w') as configfile:
                 self.config.write(configfile)
-                return ('Building configuration file completed successfully.')
+                return (f'Building configuration file completed successfully.')
         except Exception as exc:
             return (f'Error building configuration file "{exc}": {self.ini}')

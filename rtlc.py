@@ -3,136 +3,160 @@ import logging
 import logging.handlers
 import os
 import shutil
+import sys
 
 from uuid import uuid4
 from time import sleep, mktime, strptime, strftime, gmtime
 
 from config import Config
 
-config = Config('config.ini')
-config.load()
 
-FORMAT = '[%(asctime)s]: %(levelname)s - %(message)s'
-FOLDER_LOGS = 'Logs'
-NAME_LOG = 'rtlc.log'
+class CopyUtility():
 
-if not os.path.exists(FOLDER_LOGS):
-    try:
-        os.mkdir(FOLDER_LOGS)
-    except Exception as exc:
-        print(
-            f'[RTLC ERROR]: Failed to create log directory: "{os.path.abspath(FOLDER_LOGS)}"'
-        )
-        print(f'{exc}')
-        exit()
+    def __init__(self):
+        os.chdir(self.getModulePath())
 
-logging.basicConfig(handlers='')
+        self.config = Config('config.ini')
+        self.config.load()
 
-SIZE_LOG = config.logsSize * 1024 * 1024
+        FORMAT = '[%(asctime)s]: %(levelname)s - %(message)s'
+        FOLDER_LOGS = 'Logs'
+        NAME_LOG = 'rtlc.log'
 
-mainHandler = logging.handlers.RotatingFileHandler(
-    f'{FOLDER_LOGS}/{NAME_LOG}',
-    maxBytes=SIZE_LOG,
-    backupCount=config.logsBackups,
-    encoding='utf-8')
-mainHandler.setFormatter(logging.Formatter(FORMAT))
-
-mainLog = logging.getLogger('rltc')
-mainLog.addHandler(mainHandler)
-
-config.logsLevel = config.logsLevel.upper()
-if config.logsLevel not in [
-        'NOTSET', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'
-]:
-    mainLog.error(
-        f'Uncorrect logging level: "{config.logsLevel}". Available values: "NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL".'
-    )
-    exit()
-
-mainLog.setLevel(config.logsLevel)
-mainLog.info('Starting service...')
-
-if not os.path.exists(config.ini):
-    mainLog.warning(
-        f'File "{config.ini}" not found, modify the generated config file ("{os.path.abspath(config.ini)}").'
-    )
-    result = config.save()
-    print(result)
-    exit()
-
-config.save()
-
-remotePath = config.remotePath
-localPath = config.localPath
-
-notPath = False
-
-if not os.path.exists(remotePath):
-    mainLog.error(f'Remote folder "{remotePath}" not found.')
-    notPath = True
-
-if not os.path.exists(localPath):
-    mainLog.error(f'Local folder "{localPath}" not found.')
-    notPath = True
-
-if notPath:
-    exit()
-
-refreshTime = config.refreshTime
-timeStamp = config.timeStamp
-extensionFile = tuple(config.extensionFile.replace(' ', '').split(','))
-
-mainLog.info(f'Logs level: {config.logsLevel}')
-mainLog.info(f'Remote folder: "{remotePath}"')
-mainLog.info(f'Local folder: "{localPath}"')
-mainLog.info(f'Refresh time: {refreshTime}')
-mainLog.info(f'Extension file: {extensionFile}')
-mainLog.info(f'Start date: {config.startDate}')
-mainLog.info(
-    f'Last file: {strftime("%Y-%m-%d %H:%M:%S", gmtime(timeStamp))} (TimeStamp: {timeStamp})'
-)
-
-if not timeStamp:
-    try:
-        timeStamp = mktime(strptime(config.startDate, '%Y-%m-%d %H:%M'))
-    except ValueError:
-        mainLog.error(
-            f'Uncorrect start date: "{config.startDate}", correct format: "2000-01-01 00:00"'
-        )
-        exit()
-
-
-def scandir(path: str, list: list):
-    with os.scandir(path) as scanDir:
-        for entry in scanDir:
-            if entry.is_dir(follow_symlinks=False):
-                scandir(entry.path, list)
-            elif entry.is_file(follow_symlinks=False) and entry.name.endswith(
-                    extensionFile) and (entry.stat().st_ctime > timeStamp):
-                list.append((entry.stat().st_ctime, entry.path))
-
-
-remoteList = []
-mainLog.info('Service started.')
-
-while True:
-    mainLog.info(f'Refresh')
-    scandir(remotePath, remoteList)
-    remoteList = sorted(remoteList)
-    mainLog.info(f'Found {len(remoteList)} files to copy.')
-    if remoteList:
-        timeStamp = remoteList[-1][0]
-        for file in remoteList[:]:  # перебрать копию списка
+        if not os.path.exists(FOLDER_LOGS):
             try:
-                newName = f'{uuid4()}{os.path.splitext(file[1])[1]}'
-                shutil.copy2(f'{file[1]}', f'{localPath}/{newName}')
-                mainLog.info(
-                    f'File "{newName} << {file[1]}" "{strftime("%Y-%m-%d %H:%M:%S", gmtime(file[0]))} ({file[0]})" copied to local folder.'
-                )
-                remoteList.remove(file)
+                os.mkdir(FOLDER_LOGS)
             except Exception as exc:
-                mainLog.error(
-                    f"File '{file[1]}' not copied to local folder: {exc}")
-        config.timeStamp = timeStamp
-        config.save()
-    sleep(refreshTime)
+                print(
+                    f'[RTLC ERROR]: Failed to create log directory: "{os.path.abspath(FOLDER_LOGS)}"'
+                )
+                print(f'{exc}')
+                sys.exit()
+
+        logging.basicConfig(handlers='')
+
+        SIZE_LOG = self.config.logsSize * 1024 * 1024
+
+        mainHandler = logging.handlers.RotatingFileHandler(
+            f'{FOLDER_LOGS}/{NAME_LOG}',
+            maxBytes=SIZE_LOG,
+            backupCount=self.config.logsBackups,
+            encoding='utf-8')
+        mainHandler.setFormatter(logging.Formatter(FORMAT))
+
+        self.log = logging.getLogger('rltc')
+        self.log.addHandler(mainHandler)
+
+        self.config.logsLevel = self.config.logsLevel.upper()
+        if self.config.logsLevel not in [
+                'NOTSET', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'
+        ]:
+            self.log.error(
+                f'Uncorrect logging level: "{self.config.logsLevel}". Available values: "NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL".'
+            )
+            sys.exit()
+
+        self.log.setLevel(self.config.logsLevel)
+        self.log.info('Starting service...')
+
+        if not os.path.exists(self.config.ini):
+            self.log.warning(
+                f'File "{self.config.ini}" not found, modify the generated config file ("{os.path.abspath(self.config.ini)}").'
+            )
+            result = self.config.save()
+            print(result)
+            sys.exit()
+
+        self.config.save()
+
+        self.remotePath = self.config.remotePath
+        self.localPath = self.config.localPath
+
+        notPath = False
+
+        if not os.path.exists(self.remotePath):
+            self.log.error(f'Remote folder "{self.remotePath}" not found.')
+            notPath = True
+
+        if not os.path.exists(self.localPath):
+            self.log.error(f'Local folder "{self.localPath}" not found.')
+            notPath = True
+
+        if notPath:
+            sys.exit()
+
+        self.refreshTime = self.config.refreshTime
+        self.timeStamp = self.config.timeStamp
+        self.extensionFile = tuple(
+            self.config.extensionFile.replace(' ', '').split(','))
+
+        self.log.info(f'Logs level: {self.config.logsLevel}')
+        self.log.info(f'Remote folder: "{self.remotePath}"')
+        self.log.info(f'Local folder: "{self.localPath}"')
+        self.log.info(f'Refresh time: {self.refreshTime}')
+        self.log.info(f'Extension file: {self.extensionFile}')
+        self.log.info(f'Start date: {self.config.startDate}')
+        self.log.info(
+            f'Last file: {strftime("%Y-%m-%d %H:%M:%S", gmtime(self.timeStamp))} (timeStamp: {self.timeStamp})'
+        )
+
+        if not self.timeStamp:
+            try:
+                self.timeStamp = mktime(
+                    strptime(self.config.startDate, '%Y-%m-%d %H:%M'))
+            except ValueError:
+                self.log.error(
+                    f'Uncorrect start date: "{self.config.startDate}", correct format: "2000-01-01 00:00"'
+                )
+                sys.exit()
+
+    @staticmethod
+    def getModulePath() -> str:
+        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+            return os.path.dirname(sys.executable)
+        else:
+            return os.path.dirname(__file__)
+
+    def scandir(self, path: str, remoteList: list):
+        with os.scandir(path) as scanDir:
+            for entry in scanDir:
+                if entry.is_dir(follow_symlinks=False):
+                    self.scandir(entry.path, remoteList)
+                elif entry.is_file(
+                        follow_symlinks=False) and entry.name.endswith(
+                            self.extensionFile) and (entry.stat().st_ctime >
+                                                     self.timeStamp):
+                    remoteList.append((entry.stat().st_ctime, entry.path))
+
+    def copyfiles(self, remoteList: list):
+        self.log.info(os.path.abspath(__file__))
+        self.log.info(f'Refresh')
+        self.scandir(self.remotePath, remoteList)
+        remoteList = sorted(remoteList)
+        self.log.info(f'Found {len(remoteList)} files to copy.')
+        if remoteList:
+            self.timeStamp = remoteList[-1][0]
+            for file in remoteList[:]:  # перебрать копию списка
+                try:
+                    newName = f'{uuid4()}{os.path.splitext(file[1])[1]}'
+                    shutil.copy2(f'{file[1]}', f'{self.localPath}/{newName}')
+                    self.log.info(
+                        f'File "{newName} << {file[1]}" "{strftime("%Y-%m-%d %H:%M:%S", gmtime(file[0]))} ({file[0]})" copied to local folder.'
+                    )
+                    remoteList.remove(file)
+                except Exception as exc:
+                    self.log.error(
+                        f"File '{file[1]}' not copied to local folder: {exc}")
+            self.config.timeStamp = self.timeStamp
+            self.config.save()
+
+    def timeout(self):
+        sleep(self.refreshTime)
+
+
+if __name__ == '__main__':
+    rtlc = CopyUtility()
+    rtlc.log.info('Service started.')
+    while True:
+        rtlc.copyfiles([])
+        rtlc.timeout()
