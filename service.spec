@@ -28,7 +28,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='service',
+    name='rtlc',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

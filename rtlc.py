@@ -11,10 +11,21 @@ from time import sleep, mktime, strptime, strftime, gmtime
 from config import Config
 
 
+def getModulePath() -> str:
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        return os.path.dirname(sys.executable)
+    else:
+        return os.path.dirname(__file__)
+
+
+def getLenSysArg() -> int:
+    return len(sys.argv)
+
+
 class CopyUtility():
 
     def __init__(self):
-        os.chdir(self.getModulePath())
+        os.chdir(getModulePath())
 
         self.config = Config('config.ini')
         self.config.load()
@@ -109,15 +120,8 @@ class CopyUtility():
                     f'Uncorrect start date: "{self.config.startDate}", correct format: "2000-01-01 00:00"'
                 )
                 sys.exit()
-        
-        self.remoteList = []
 
-    @staticmethod
-    def getModulePath() -> str:
-        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-            return os.path.dirname(sys.executable)
-        else:
-            return os.path.dirname(__file__)
+        self.remoteList = []
 
     def scandir(self, path: str):
         with os.scandir(path) as scanDir:

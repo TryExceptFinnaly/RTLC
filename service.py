@@ -1,10 +1,8 @@
-import sys
-
 import win32serviceutil  # ServiceFramework and commandline helper
 import win32service  # Events
 import servicemanager  # Simple setup and logging
 
-from rtlc import CopyUtility
+from rtlc import CopyUtility, getLenSysArg
 
 
 class MyService:
@@ -40,7 +38,7 @@ class MyServiceFramework(win32serviceutil.ServiceFramework):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 1:
+    if getLenSysArg() == 1:
         servicemanager.Initialize()
         servicemanager.PrepareToHostSingle(MyServiceFramework)
         servicemanager.StartServiceCtrlDispatcher()
