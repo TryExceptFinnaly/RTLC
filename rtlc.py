@@ -4,6 +4,7 @@ import logging.handlers
 import os
 import shutil
 import sys
+import atexit
 
 from uuid import uuid4
 from time import sleep, mktime, strptime, strftime, gmtime
@@ -27,9 +28,6 @@ class CopyUtility():
     def __init__(self):
         os.chdir(getModulePath())
 
-        self.config = Config('config.ini')
-        self.config.load()
-
         FORMAT = '[%(asctime)s]: %(levelname)s - %(message)s'
         FOLDER_LOGS = 'Logs'
         NAME_LOG = 'rtlc.log'
@@ -44,9 +42,12 @@ class CopyUtility():
                 print(f'{exc}')
                 sys.exit()
 
-        logging.basicConfig(handlers='')
+        self.config = Config('config.ini')
+        self.config.load()
 
         SIZE_LOG = self.config.logsSize * 1024 * 1024
+
+        logging.basicConfig(handlers='')
 
         mainHandler = logging.handlers.RotatingFileHandler(
             f'{FOLDER_LOGS}/{NAME_LOG}',
@@ -78,38 +79,23 @@ class CopyUtility():
             print(result)
             sys.exit()
 
-        self.config.save()
-
         self.remotePath = self.config.remotePath
         self.localPath = self.config.localPath
 
         notPath = False
 
         if not os.path.exists(self.remotePath):
-            self.log.error(f'Remote folder "{self.remotePath}" not found.')
+            self.log.error(f'Remote folder: "{self.remotePath}" not found.')
             notPath = True
 
         if not os.path.exists(self.localPath):
-            self.log.error(f'Local folder "{self.localPath}" not found.')
+            self.log.error(f'Local folder: "{self.localPath}" not found.')
             notPath = True
 
         if notPath:
             sys.exit()
 
-        self.refreshTime = self.config.refreshTime
         self.timeStamp = self.config.timeStamp
-        self.extensionFile = tuple(
-            self.config.extensionFile.replace(' ', '').split(','))
-
-        self.log.info(f'Logs level: {self.config.logsLevel}')
-        self.log.info(f'Remote folder: "{self.remotePath}"')
-        self.log.info(f'Local folder: "{self.localPath}"')
-        self.log.info(f'Refresh time: {self.refreshTime}')
-        self.log.info(f'Extension file: {self.extensionFile}')
-        self.log.info(f'Start date: {self.config.startDate}')
-        self.log.info(
-            f'Last file: {strftime("%Y-%m-%d %H:%M:%S", gmtime(self.timeStamp))} (timeStamp: {self.timeStamp})'
-        )
 
         if not self.timeStamp:
             try:
@@ -121,7 +107,23 @@ class CopyUtility():
                 )
                 sys.exit()
 
+        self.refreshTime = self.config.refreshTime
+        self.extensionFile = tuple(
+            self.config.extensionFile.replace(' ', '').split(','))
+
+        self.log.info(f'    Logs level: {self.config.logsLevel}')
+        self.log.info(f'    Remote folder: "{self.remotePath}"')
+        self.log.info(f'    Local folder: "{self.localPath}"')
+        self.log.info(f'    Refresh time: {self.refreshTime}')
+        self.log.info(f'    Extension file: {self.extensionFile}')
+        self.log.info(f'    Start date: {self.config.startDate}')
+        self.log.info(
+            f'    Last file: {strftime("%Y-%m-%d %H:%M:%S", gmtime(self.timeStamp))} (timeStamp: {self.timeStamp})'
+        )
+
         self.remoteList = []
+        atexit.register(self.end)
+        self.log.info('Service started.')
 
     def scandir(self, path: str):
         with os.scandir(path) as scanDir:
@@ -158,10 +160,12 @@ class CopyUtility():
     def timeout(self):
         sleep(self.refreshTime)
 
+    def end(self):
+        self.log.info('Service stopped.')
+
 
 if __name__ == '__main__':
     rtlc = CopyUtility()
-    rtlc.log.info('Service started.')
     while True:
         rtlc.copyfiles()
         rtlc.timeout()

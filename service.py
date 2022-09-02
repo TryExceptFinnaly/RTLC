@@ -13,7 +13,6 @@ class MyService:
     def run(self):
         self.running = True
         rtlc = CopyUtility()
-        rtlc.log.info('Service started.')
         servicemanager.LogInfoMsg('Service started.')
         while self.running:
             rtlc.copyfiles()
