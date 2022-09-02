@@ -18,7 +18,7 @@ class MyService:
         rtlc.log.info('Service started.')
         servicemanager.LogInfoMsg('Service started.')
         while self.running:
-            rtlc.copyfiles([])
+            rtlc.copyfiles()
             rtlc.timeout()
 
 

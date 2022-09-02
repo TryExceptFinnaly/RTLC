@@ -109,6 +109,8 @@ class CopyUtility():
                     f'Uncorrect start date: "{self.config.startDate}", correct format: "2000-01-01 00:00"'
                 )
                 sys.exit()
+        
+        self.remoteList = []
 
     @staticmethod
     def getModulePath() -> str:
@@ -117,33 +119,32 @@ class CopyUtility():
         else:
             return os.path.dirname(__file__)
 
-    def scandir(self, path: str, remoteList: list):
+    def scandir(self, path: str):
         with os.scandir(path) as scanDir:
             for entry in scanDir:
                 if entry.is_dir(follow_symlinks=False):
-                    self.scandir(entry.path, remoteList)
+                    self.scandir(entry.path)
                 elif entry.is_file(
                         follow_symlinks=False) and entry.name.endswith(
                             self.extensionFile) and (entry.stat().st_ctime >
                                                      self.timeStamp):
-                    remoteList.append((entry.stat().st_ctime, entry.path))
+                    self.remoteList.append((entry.stat().st_ctime, entry.path))
 
-    def copyfiles(self, remoteList: list):
-        self.log.info(os.path.abspath(__file__))
+    def copyfiles(self):
         self.log.info(f'Refresh')
-        self.scandir(self.remotePath, remoteList)
-        remoteList = sorted(remoteList)
-        self.log.info(f'Found {len(remoteList)} files to copy.')
-        if remoteList:
-            self.timeStamp = remoteList[-1][0]
-            for file in remoteList[:]:  # перебрать копию списка
+        self.scandir(self.remotePath)
+        self.remoteList = sorted(self.remoteList)
+        self.log.info(f'Found {len(self.remoteList)} files to copy.')
+        if self.remoteList:
+            self.timeStamp = self.remoteList[-1][0]
+            for file in self.remoteList[:]:  # перебрать копию списка
                 try:
                     newName = f'{uuid4()}{os.path.splitext(file[1])[1]}'
                     shutil.copy2(f'{file[1]}', f'{self.localPath}/{newName}')
                     self.log.info(
                         f'File "{newName} << {file[1]}" "{strftime("%Y-%m-%d %H:%M:%S", gmtime(file[0]))} ({file[0]})" copied to local folder.'
                     )
-                    remoteList.remove(file)
+                    self.remoteList.remove(file)
                 except Exception as exc:
                     self.log.error(
                         f"File '{file[1]}' not copied to local folder: {exc}")
@@ -158,5 +159,5 @@ if __name__ == '__main__':
     rtlc = CopyUtility()
     rtlc.log.info('Service started.')
     while True:
-        rtlc.copyfiles([])
+        rtlc.copyfiles()
         rtlc.timeout()
