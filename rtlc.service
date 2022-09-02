@@ -7,7 +7,6 @@ Type=simple
 User=lins
 Group=lins
 
-WorkingDirectory=/srv/rtlc
 ExecStart=/usr/bin/python3 /srv/rtlc/rtlc.py
 
 [Install]
