@@ -31,6 +31,7 @@ class CopyUtility():
         FORMAT = '[%(asctime)s]: %(levelname)s - %(message)s'
         FOLDER_LOGS = 'Logs'
         NAME_LOG = 'rtlc.log'
+        NAME_QUEUE = 'rtlc.queue'
 
         if not os.path.exists(FOLDER_LOGS):
             try:
@@ -121,9 +122,34 @@ class CopyUtility():
             f'    Last file: {strftime("%Y-%m-%d %H:%M:%S", gmtime(self.timeStamp))} (timeStamp: {self.timeStamp})'
         )
 
+        self.nameQueue = NAME_QUEUE
         self.remoteList = []
+        self.loadQueue()
         atexit.register(self.end)
         self.log.info('Service started.')
+
+    def loadQueue(self):
+        if os.path.exists(self.nameQueue):
+            with open(self.nameQueue, 'r', encoding='utf-8') as queue:
+                files = queue.readlines()
+                for file in files:
+                    self.remoteList.append((self.timeStamp, file.strip()))
+            os.remove(self.nameQueue)
+
+    def saveQueue(self):
+        if self.remoteList:
+            try:
+                with open(self.nameQueue, 'w', encoding='utf-8') as queue:
+                    for file in self.remoteList:
+                        queue.write(f'{file[1]}\n')
+            except Exception as exc:
+                self.log.error(f'WRITE {exc}')
+        else:
+            if os.path.exists(self.nameQueue):
+                try:
+                    os.remove(self.nameQueue)
+                except Exception as exc:
+                    self.log.error(f'REMOVE {exc}')
 
     def scandir(self, path: str):
         with os.scandir(path) as scanDir:
@@ -156,6 +182,7 @@ class CopyUtility():
                         f"File '{file[1]}' not copied to local folder: {exc}")
             self.config.timeStamp = self.timeStamp
             self.config.save()
+            self.saveQueue()
 
     def timeout(self):
         sleep(self.refreshTime)

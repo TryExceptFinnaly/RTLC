@@ -86,7 +86,7 @@ class Config:
             'backups': self.logsBackups
         }
         try:
-            with open(self.ini, 'w') as configfile:
+            with open(self.ini, 'w', encoding='utf-8') as configfile:
                 self.config.write(configfile)
                 return (f'Building configuration file completed successfully.')
         except Exception as exc:
