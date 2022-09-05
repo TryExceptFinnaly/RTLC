@@ -1,6 +1,6 @@
 # Remote To Local Copy(RTLC)
-1. Install to Windows(x64):
-a. Скачать 'dist/rtlc.exe'.
+1. Install to Windows(x64):\n
+a. Скачать 'dist/rtlc.exe'.\n
 b. Закинуть бинарь в рабочую директорию (Например: 'C:/rtlc/').
 c. Открыть командную строку от имени администратора и запустить бинарь с параметром install (Пример: 'C:/rtlc/rtlc.exe install')
 e. При первом запуске утилиты (Через 'Службы' или комндную строку (Пример: 'C:/rtlc/rtlc.exe start')) она сгенерирует конфигурационный файл в директорию с бинарем (Пример: 'C:/rtlc/config.ini'). 
