@@ -134,7 +134,10 @@ class CopyUtility():
                 files = queue.readlines()
                 for file in files:
                     self.remoteList.append((self.timeStamp, file.strip()))
-            os.remove(self.nameQueue)
+            try:
+                os.remove(self.nameQueue)
+            except Exception as exc:
+                self.log.error(f'REMOVE {exc}')
 
     def saveQueue(self):
         if self.remoteList:
@@ -152,15 +155,19 @@ class CopyUtility():
                     self.log.error(f'REMOVE {exc}')
 
     def scandir(self, path: str):
-        with os.scandir(path) as scanDir:
-            for entry in scanDir:
-                if entry.is_dir(follow_symlinks=False):
-                    self.scandir(entry.path)
-                elif entry.is_file(
-                        follow_symlinks=False) and entry.name.endswith(
-                            self.extensionFile) and (entry.stat().st_ctime >
-                                                     self.timeStamp):
-                    self.remoteList.append((entry.stat().st_ctime, entry.path))
+        try:
+            with os.scandir(path) as scanDir:
+                for entry in scanDir:
+                    if entry.is_dir(follow_symlinks=False):
+                        self.scandir(entry.path)
+                    elif entry.is_file(
+                            follow_symlinks=False) and entry.name.endswith(
+                                self.extensionFile) and (entry.stat().st_ctime
+                                                         > self.timeStamp):
+                        self.remoteList.append(
+                            (entry.stat().st_ctime, entry.path))
+        except Exception as exc:
+            self.log.error(f"Directory '{path}' scan error: {exc}")
 
     def copyfiles(self):
         self.log.info(f'Refresh')
