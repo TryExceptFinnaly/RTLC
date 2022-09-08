@@ -83,18 +83,18 @@ class CopyUtility():
         self.remotePath = self.config.remotePath
         self.localPath = self.config.localPath
 
-        notPath = False
+        # notPath = False
 
-        if not os.path.exists(self.remotePath):
-            self.log.error(f'Remote folder: "{self.remotePath}" not found.')
-            notPath = True
+        # if not os.path.exists(self.remotePath):
+        #     self.log.error(f'Remote folder: "{self.remotePath}" not found.')
+        #     notPath = True
 
-        if not os.path.exists(self.localPath):
-            self.log.error(f'Local folder: "{self.localPath}" not found.')
-            notPath = True
+        # if not os.path.exists(self.localPath):
+        #     self.log.error(f'Local folder: "{self.localPath}" not found.')
+        #     notPath = True
 
-        if notPath:
-            sys.exit()
+        # if notPath:
+        #     sys.exit()
 
         self.timeStamp = self.config.timeStamp
 
@@ -154,6 +154,26 @@ class CopyUtility():
                 except Exception as exc:
                     self.log.error(f'REMOVE {exc}')
 
+    def walker(self):
+        self.log.info(f'Refresh')
+        self.scandir(self.remotePath)
+        self.remoteList = sorted(self.remoteList)
+        self.log.info(f'Found {len(self.remoteList)} files to copy.')
+        if self.remoteList:
+            self.timeStamp = self.remoteList[-1][0]
+            for file in self.remoteList[:]:
+                    newName = f'{uuid4()}{os.path.splitext(file[1])[1]}'
+                    if self.copyfile(f'{file[1]}', f'{self.localPath}/{newName}'):
+                        self.log.info(
+                            f'File "{newName} << {file[1]}" "{strftime("%Y-%m-%d %H:%M:%S", gmtime(file[0]))} ({file[0]})" copied to local folder.'
+                        )
+                        self.remoteList.remove(file)
+                    else:
+                        self.log.error(f"File '{file[1]}' not copied to local folder.")
+            self.config.timeStamp = self.timeStamp
+            self.config.save()
+            self.saveQueue()
+
     def scandir(self, path: str):
         try:
             with os.scandir(path) as scanDir:
@@ -169,27 +189,13 @@ class CopyUtility():
         except Exception as exc:
             self.log.error(f"Directory '{path}' scan error: {exc}")
 
-    def copyfiles(self):
-        self.log.info(f'Refresh')
-        self.scandir(self.remotePath)
-        self.remoteList = sorted(self.remoteList)
-        self.log.info(f'Found {len(self.remoteList)} files to copy.')
-        if self.remoteList:
-            self.timeStamp = self.remoteList[-1][0]
-            for file in self.remoteList[:]:  # перебрать копию списка
-                try:
-                    newName = f'{uuid4()}{os.path.splitext(file[1])[1]}'
-                    shutil.copy2(f'{file[1]}', f'{self.localPath}/{newName}')
-                    self.log.info(
-                        f'File "{newName} << {file[1]}" "{strftime("%Y-%m-%d %H:%M:%S", gmtime(file[0]))} ({file[0]})" copied to local folder.'
-                    )
-                    self.remoteList.remove(file)
-                except Exception as exc:
-                    self.log.error(
-                        f"File '{file[1]}' not copied to local folder: {exc}")
-            self.config.timeStamp = self.timeStamp
-            self.config.save()
-            self.saveQueue()
+    def copyfile(self, path, filename):
+        try:
+            shutil.copy2(path, filename)
+            return True
+        except Exception as exc:
+            print(f'[RTLC]: {exc}')
+            return False
 
     def timeout(self):
         sleep(self.refreshTime)
@@ -201,5 +207,5 @@ class CopyUtility():
 if __name__ == '__main__':
     rtlc = CopyUtility()
     while True:
-        rtlc.copyfiles()
+        rtlc.walker()
         rtlc.timeout()

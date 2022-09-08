@@ -3,6 +3,24 @@ import win32service  # Events
 import servicemanager  # Simple setup and logging
 
 from rtlc import CopyUtility, getLenSysArg
+from smbclient import SmbClient
+
+
+class CopyUtilityNetShare(CopyUtility):
+
+    def __init__(self):
+        super().__init__()
+        self.conn = SmbClient(self.config.shareIP, self.config.userName,
+                              self.config.userPassword, self.config.shareName,
+                              self.config.clientMachineName,
+                              self.config.remoteMachineName)
+        self.log.info(self.conn.connect())
+
+    def copyfile(self, path, filename):
+        return self.conn.copyfile(path, filename)
+
+    def scandir(self, path: str):
+        self.conn.scandir(path, self.timeStamp, self.remoteList)
 
 
 class MyService:
@@ -12,10 +30,16 @@ class MyService:
 
     def run(self):
         self.running = True
-        rtlc = CopyUtility()
+
         servicemanager.LogInfoMsg('Service started.')
+
+        if 1 == 1:  #rtlc.config.useNetShare:
+            rtlc = CopyUtilityNetShare()
+        else:
+            rtlc = CopyUtility()
+
         while self.running:
-            rtlc.copyfiles()
+            rtlc.walker()
             rtlc.timeout()
 
 

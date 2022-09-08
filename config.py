@@ -12,6 +12,13 @@ class Config:
         self.extensionFile: str = ''
         self.remotePath: str = './remote'
         self.localPath: str = './local'
+        self.useNetShare: bool = False
+        self.shareIP: str = ''
+        self.shareName: str = ''
+        self.userName: str = ''
+        self.userPassword: str = ''
+        self.clientMachineName: str = ''
+        self.remoteMachineName: str = ''
         self.logsLevel: str = 'INFO'
         self.logsSize: int = 2
         self.logsBackups: int = 5
@@ -61,6 +68,25 @@ class Config:
         self.localPath = self.getstring('Paths',
                                         'local',
                                         fallback=self.localPath)
+        self.useNetShare = self.getboolean('NetShare',
+                                           'use_network_share',
+                                           fallback=self.useNetShare)
+        self.shareIP = self.getstring('NetShare',
+                                      'share_ip',
+                                      fallback=self.shareIP)
+        self.shareName = self.getstring('NetShare',
+                                        'share_name',
+                                        fallback=self.shareName)
+        self.userName = self.getstring('NetShare',
+                                       'user_name',
+                                       fallback=self.userName)
+        self.userPassword = self.getstring('NetShare',
+                                           'user_password',
+                                           fallback=self.userPassword)
+        self.clientMachineName = self.getstring(
+            'NetShare', 'client_machine_name', fallback=self.clientMachineName)
+        self.remoteMachineName = self.getstring(
+            'NetShare', 'remote_machine_name', fallback=self.remoteMachineName)
         self.logsLevel = self.getstring('Logs',
                                         'level',
                                         fallback=self.logsLevel)
@@ -79,6 +105,15 @@ class Config:
         self.config['Paths'] = {
             'remote': self.remotePath,
             'local': self.localPath
+        }
+        self.config['NetShare'] = {
+            'use_network_share': self.useNetShare,
+            'share_ip': self.shareIP,
+            'share_name': self.shareName,
+            'user_name': self.userName,
+            'user_password': self.userPassword,
+            'client_machine_name': self.clientMachineName,
+            'remote_machine_name': self.remoteMachineName
         }
         self.config['Logs'] = {
             'level': self.logsLevel,
