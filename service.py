@@ -16,6 +16,7 @@ class CopyUtilityNetShare(CopyUtility):
                                        self.config.userPassword,
                                        self.config.clientMachineName,
                                        self.config.remoteMachineName)
+        print('12414')
         self.connect()
 
     def connect(self):
