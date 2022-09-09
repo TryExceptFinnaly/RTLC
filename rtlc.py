@@ -162,7 +162,6 @@ class CopyUtility():
                     self.log.error(f'REMOVE {exc}')
 
     def walker(self):
-        self.log.info(f'Refresh')
         self.scandir(self.remotePath)
         self.remoteList = sorted(self.remoteList)
         self.log.info(f'Found {len(self.remoteList)} files to copy.')
@@ -184,6 +183,7 @@ class CopyUtility():
 
     def scandir(self, path: str):
         try:
+            self.log.info(f'Scanning directory')
             with os.scandir(path) as scanDir:
                 for entry in scanDir:
                     if entry.is_dir(follow_symlinks=False):

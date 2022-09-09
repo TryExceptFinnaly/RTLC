@@ -26,23 +26,29 @@ class CopyUtilityNetShare(CopyUtility):
                     f"Error getting hostname by IP '{self.shareIP}': {msg}")
                 self.exit()
 
+    def connect(self):
         self.server = SmbClient.create(self.config.userName,
                                        self.config.userPassword,
                                        self.config.clientMachineName,
                                        self.config.remoteMachineName)
-
-    def connect(self):
         connect, msg = SmbClient.connect(self)
         if connect:
             self.log.info(msg)
         else:
+            self.close()
             self.log.error(msg)
-            self.exit()
+            self.timeout()
+            self.connect()
+
+    def close(self):
+        SmbClient.close(self)
 
     def copyfile(self, path, filename):
         return SmbClient.copyfile(self, path, filename)
 
     def scandir(self, path):
+        self.close()
+        self.connect()
         SmbClient.scandir(self, path)
 
 
@@ -73,6 +79,7 @@ class MyServiceFramework(win32serviceutil.ServiceFramework):
 
     _svc_name_ = 'RTLC'
     _svc_display_name_ = 'Remote To Local Copy'
+    _svc_description_ = 'Remote To Local Copy files utility'
 
     def SvcStop(self):
         self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)

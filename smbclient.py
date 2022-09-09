@@ -1,6 +1,7 @@
 from smb.SMBConnection import SMBConnection
 from nmb.NetBIOS import NetBIOS
 
+
 class SmbClient():
 
     def __init__(self, shareIP, userName, userPassword, shareName,
@@ -40,6 +41,12 @@ class SmbClient():
                 return False, 'Failed authentication.'
         except Exception as exc:
             return False, f'{exc}'
+
+    def close(self):
+        try:
+            self.server.close()
+        except:
+            pass
 
     def copyfile(self, path, filename):
         try:
