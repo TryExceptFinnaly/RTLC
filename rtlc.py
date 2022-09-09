@@ -11,6 +11,8 @@ from time import sleep, mktime, strptime, strftime, gmtime
 
 from config import Config
 
+CONFIG_NAME = 'config.ini'
+
 
 def getModulePath() -> str:
     if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
@@ -43,7 +45,7 @@ class CopyUtility():
                 print(f'{exc}')
                 self.exit()
 
-        self.config = Config('config.ini')
+        self.config = Config(CONFIG_NAME)
         self.config.load()
 
         SIZE_LOG = self.config.logsSize * 1024 * 1024
@@ -126,6 +128,12 @@ class CopyUtility():
         self.loadQueue()
         atexit.register(self.end)
         self.log.info('Service started.')
+
+    @staticmethod
+    def getUseNetShare():
+        config = Config(os.path.join(getModulePath(), CONFIG_NAME))
+        config.load()
+        return config.useNetShare
 
     def loadQueue(self):
         if os.path.exists(self.nameQueue):

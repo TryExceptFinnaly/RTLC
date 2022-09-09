@@ -1,5 +1,5 @@
 from smb.SMBConnection import SMBConnection
-
+from nmb.NetBIOS import NetBIOS
 
 class SmbClient():
 
@@ -11,6 +11,18 @@ class SmbClient():
         self.shareName = shareName
         self.clienthost = clientMachineName
         self.remotehost = remoteMachineName
+
+    def getBIOSName(self, timeout=5):
+        try:
+            bios = NetBIOS()
+            msg = bios.queryIPForName(self.shareIP, timeout=timeout)[0]
+            result = True
+        except Exception as exc:
+            msg = str(exc)
+            result = False
+        finally:
+            bios.close()
+            return result, msg
 
     @staticmethod
     def create(userName, userPassword, clientMachineName, remoteMachineName):

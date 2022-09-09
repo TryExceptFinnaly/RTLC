@@ -12,11 +12,24 @@ class CopyUtilityNetShare(CopyUtility):
         super().__init__()
         self.shareIP = self.config.shareIP
         self.shareName = self.config.shareName
+
+        if not self.config.remoteMachineName:
+            result, msg = SmbClient.getBIOSName(self)
+            if result:
+                self.config.remoteMachineName = msg
+                self.log.info(
+                    f"Getting hostname by IP '{self.shareIP}' successfully: '{msg}'"
+                )
+                self.config.save()
+            else:
+                self.log.error(
+                    f"Error getting hostname by IP '{self.shareIP}': {msg}")
+                self.exit()
+
         self.server = SmbClient.create(self.config.userName,
                                        self.config.userPassword,
                                        self.config.clientMachineName,
                                        self.config.remoteMachineName)
-        self.connect()
 
     def connect(self):
         connect, msg = SmbClient.connect(self)
@@ -40,11 +53,16 @@ class MyService:
 
     def run(self):
         self.running = True
-        servicemanager.LogInfoMsg('Service started.')
 
-        #rtlc = CopyUtility()
+        useNetShare = CopyUtility.getUseNetShare()
 
-        rtlc = CopyUtilityNetShare()
+        if useNetShare:
+            rtlc = CopyUtilityNetShare()
+            rtlc.connect()
+        else:
+            rtlc = CopyUtility()
+
+        servicemanager.LogInfoMsg('Service started successfully.')
 
         while self.running:
             rtlc.walker()
@@ -75,3 +93,5 @@ if __name__ == '__main__':
         servicemanager.StartServiceCtrlDispatcher()
     else:
         win32serviceutil.HandleCommandLine(MyServiceFramework)
+    # rtlc = MyService()
+    # rtlc.run()
