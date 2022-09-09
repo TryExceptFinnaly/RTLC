@@ -41,7 +41,7 @@ class CopyUtility():
                     f'[RTLC ERROR]: Failed to create log directory: "{os.path.abspath(FOLDER_LOGS)}"'
                 )
                 print(f'{exc}')
-                sys.exit()
+                self.exit()
 
         self.config = Config('config.ini')
         self.config.load()
@@ -67,7 +67,7 @@ class CopyUtility():
             self.log.error(
                 f'Uncorrect logging level: "{self.config.logsLevel}". Available values: "NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL".'
             )
-            sys.exit()
+            self.exit()
 
         self.log.setLevel(self.config.logsLevel)
         self.log.info('Starting service...')
@@ -78,23 +78,22 @@ class CopyUtility():
             )
             result = self.config.save()
             print(result)
-            sys.exit()
+            self.exit()
 
         self.remotePath = self.config.remotePath
         self.localPath = self.config.localPath
 
-        # notPath = False
-
-        # if not os.path.exists(self.remotePath):
-        #     self.log.error(f'Remote folder: "{self.remotePath}" not found.')
-        #     notPath = True
-
-        # if not os.path.exists(self.localPath):
-        #     self.log.error(f'Local folder: "{self.localPath}" not found.')
-        #     notPath = True
-
-        # if notPath:
-        #     sys.exit()
+        if not self.config.useNetShare:
+            notPath = False
+            if not os.path.exists(self.remotePath):
+                self.log.error(
+                    f'Remote folder: "{self.remotePath}" not found.')
+                notPath = True
+            if not os.path.exists(self.localPath):
+                self.log.error(f'Local folder: "{self.localPath}" not found.')
+                notPath = True
+            if notPath:
+                self.exit()
 
         self.timeStamp = self.config.timeStamp
 
@@ -106,7 +105,7 @@ class CopyUtility():
                 self.log.error(
                     f'Uncorrect start date: "{self.config.startDate}", correct format: "2000-01-01 00:00"'
                 )
-                sys.exit()
+                self.exit()
 
         self.refreshTime = self.config.refreshTime
         self.extensionFile = tuple(
@@ -162,14 +161,15 @@ class CopyUtility():
         if self.remoteList:
             self.timeStamp = self.remoteList[-1][0]
             for file in self.remoteList[:]:
-                    newName = f'{uuid4()}{os.path.splitext(file[1])[1]}'
-                    if self.copyfile(f'{file[1]}', f'{self.localPath}/{newName}'):
-                        self.log.info(
-                            f'File "{newName} << {file[1]}" "{strftime("%Y-%m-%d %H:%M:%S", gmtime(file[0]))} ({file[0]})" copied to local folder.'
-                        )
-                        self.remoteList.remove(file)
-                    else:
-                        self.log.error(f"File '{file[1]}' not copied to local folder.")
+                newName = f'{uuid4()}{os.path.splitext(file[1])[1]}'
+                if self.copyfile(f'{file[1]}', f'{self.localPath}/{newName}'):
+                    self.log.info(
+                        f'File "{newName} << {file[1]}" "{strftime("%Y-%m-%d %H:%M:%S", gmtime(file[0]))} ({file[0]})" copied to local folder.'
+                    )
+                    self.remoteList.remove(file)
+                else:
+                    self.log.error(
+                        f"File '{file[1]}' not copied to local folder.")
             self.config.timeStamp = self.timeStamp
             self.config.save()
             self.saveQueue()
@@ -199,6 +199,9 @@ class CopyUtility():
 
     def timeout(self):
         sleep(self.refreshTime)
+
+    def exit(self):
+        sys.exit()
 
     def end(self):
         self.log.info('Service stopped.')

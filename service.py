@@ -10,17 +10,27 @@ class CopyUtilityNetShare(CopyUtility):
 
     def __init__(self):
         super().__init__()
-        self.conn = SmbClient(self.config.shareIP, self.config.userName,
-                              self.config.userPassword, self.config.shareName,
-                              self.config.clientMachineName,
-                              self.config.remoteMachineName)
-        self.log.info(self.conn.connect())
+        self.shareIP = self.config.shareIP
+        self.shareName = self.config.shareName
+        self.server = SmbClient.create(self.config.userName,
+                                       self.config.userPassword,
+                                       self.config.clientMachineName,
+                                       self.config.remoteMachineName)
+        self.connect()
+
+    def connect(self):
+        connect, msg = SmbClient.connect(self)
+        if connect:
+            self.log.info(msg)
+        else:
+            self.log.error(msg)
+            self.exit()
 
     def copyfile(self, path, filename):
-        return self.conn.copyfile(path, filename)
+        return SmbClient.copyfile(self, path, filename)
 
-    def scandir(self, path: str):
-        self.conn.scandir(path, self.timeStamp, self.remoteList)
+    def scandir(self, path):
+        SmbClient.scandir(self, path)
 
 
 class MyService:
@@ -30,13 +40,11 @@ class MyService:
 
     def run(self):
         self.running = True
-
         servicemanager.LogInfoMsg('Service started.')
 
-        if 1 == 1:  #rtlc.config.useNetShare:
-            rtlc = CopyUtilityNetShare()
-        else:
-            rtlc = CopyUtility()
+        #rtlc = CopyUtility()
+
+        rtlc = CopyUtilityNetShare()
 
         while self.running:
             rtlc.walker()
