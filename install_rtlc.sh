@@ -1,4 +1,5 @@
 read -r -p 'Enter working directory (default is /srv/rtlc/): ' INSTALL_PATH
+RTLC_USER=basename $MAIL
 if [[ $INSTALL_PATH = '' ]]
 then
 	INSTALL_PATH="/srv/rtlc/"
@@ -9,9 +10,9 @@ echo -e "\
 Description=rtlc.service\n\n\
 [Service]\n\
 Type=simple\n\n\
-User=lins\n\
-Group=lins\n\n\
-ExecStart=/usr/bin/python3 /srv/rtlc/rtlc.py\n\n\
+User=$RTLC_USER\n\
+Group=$RTLC_USER\n\n\
+ExecStart=/usr/bin/python3 $INSTALL_PATH/rtlc.py\n\n\
 [Install]\n\
 WantedBy=multi-user.target" > /etc/systemd/system/rtlc.service
 

@@ -186,7 +186,8 @@ class CopyUtility():
         try:
             with os.scandir(path) as scanDir:
                 for entry in scanDir:
-                    if entry.is_dir(follow_symlinks=False):
+                    if entry.is_dir(follow_symlinks=False) and (
+                            entry.stat().st_mtime > self.timeStamp):
                         self.scandir(entry.path)
                     elif entry.is_file(
                             follow_symlinks=False) and entry.name.endswith(

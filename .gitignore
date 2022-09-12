@@ -6,3 +6,4 @@ config.ini
 dist/config.ini
 /logs
 dist/logs/
+test.py

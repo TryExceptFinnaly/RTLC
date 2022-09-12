@@ -76,8 +76,13 @@ class SmbClient():
         except:
             self.connect()
         for entry in scanDir:
-            if entry.isDirectory and (entry.filename !=
-                                      '.') and (entry.filename != '..'):
+            if entry.isDirectory and (
+                    entry.last_write_time > self.timeStamp) and (
+                        entry.filename != '.') and (entry.filename != '..'):
+                # print(entry.create_time)
+                # print(entry.last_access_time)
+                # print(entry.last_write_time)
+                # print(entry.last_attr_change_time)
                 self.scandir(path + entry.filename + '/')
             elif not entry.isDirectory and (entry.create_time > self.timeStamp
                                             ) and entry.filename.endswith(
