@@ -100,11 +100,11 @@ class MyServiceFramework(win32serviceutil.ServiceFramework):
 
 
 if __name__ == '__main__':
-    # if getLenSysArg() == 1:
-    #     servicemanager.Initialize()
-    #     servicemanager.PrepareToHostSingle(MyServiceFramework)
-    #     servicemanager.StartServiceCtrlDispatcher()
-    # else:
-    #     win32serviceutil.HandleCommandLine(MyServiceFramework)
-    rtlc = MyService()
-    rtlc.run()
+    if getLenSysArg() == 1:
+        servicemanager.Initialize()
+        servicemanager.PrepareToHostSingle(MyServiceFramework)
+        servicemanager.StartServiceCtrlDispatcher()
+    else:
+        win32serviceutil.HandleCommandLine(MyServiceFramework)
+    # rtlc = MyService()
+    # rtlc.run()
