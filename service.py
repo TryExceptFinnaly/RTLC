@@ -35,20 +35,26 @@ class CopyUtilityNetShare(CopyUtility):
         if connect:
             self.log.info(msg)
         else:
-            self.close()
             self.log.error(msg)
+            self.close()
             self.timeout()
             self.connect()
 
     def close(self):
         SmbClient.close(self)
 
+    def echo(self):
+        return SmbClient.echo(self)
+
     def copyfile(self, path, filename):
         return SmbClient.copyfile(self, path, filename)
 
     def scandir(self, path):
-        self.close()
-        self.connect()
+        if not self.echo():
+            self.log.error('Echo request failed, reconnect...')
+            self.close()
+            self.timeout()
+            self.connect()
         SmbClient.scandir(self, path)
 
 
@@ -94,11 +100,11 @@ class MyServiceFramework(win32serviceutil.ServiceFramework):
 
 
 if __name__ == '__main__':
-    if getLenSysArg() == 1:
-        servicemanager.Initialize()
-        servicemanager.PrepareToHostSingle(MyServiceFramework)
-        servicemanager.StartServiceCtrlDispatcher()
-    else:
-        win32serviceutil.HandleCommandLine(MyServiceFramework)
-    # rtlc = MyService()
-    # rtlc.run()
+    # if getLenSysArg() == 1:
+    #     servicemanager.Initialize()
+    #     servicemanager.PrepareToHostSingle(MyServiceFramework)
+    #     servicemanager.StartServiceCtrlDispatcher()
+    # else:
+    #     win32serviceutil.HandleCommandLine(MyServiceFramework)
+    rtlc = MyService()
+    rtlc.run()

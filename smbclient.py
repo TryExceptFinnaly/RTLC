@@ -48,6 +48,16 @@ class SmbClient():
         except:
             pass
 
+    def echo(self):
+        data = 'echo'.encode()
+        try:
+            if self.server.echo(data) == data:
+                return True
+            else:
+                return False
+        except:
+            return False
+
     def copyfile(self, path, filename):
         try:
             with open(filename, 'wb') as file_obj:
@@ -58,7 +68,10 @@ class SmbClient():
             return False
 
     def scandir(self, path: str):
-        scanDir = self.server.listPath(self.shareName, path)
+        try:
+            scanDir = self.server.listPath(self.shareName, path)
+        except:
+            self.connect()
         for entry in scanDir:
             if entry.isDirectory and (entry.filename !=
                                       '.') and (entry.filename != '..'):
