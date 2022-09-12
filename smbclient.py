@@ -1,5 +1,8 @@
+from ast import pattern
+from re import search
 from smb.SMBConnection import SMBConnection
 from nmb.NetBIOS import NetBIOS
+from smb import smb2_constants
 
 
 class SmbClient():
@@ -76,7 +79,8 @@ class SmbClient():
             if entry.isDirectory and (entry.filename !=
                                       '.') and (entry.filename != '..'):
                 self.scandir(path + entry.filename + '/')
-            elif not entry.isDirectory and (entry.create_time >
-                                            self.timeStamp):
+            elif not entry.isDirectory and (entry.create_time > self.timeStamp
+                                            ) and entry.filename.endswith(
+                                                self.extensionFile):
                 self.remoteList.append(
                     (entry.create_time, path + entry.filename))
