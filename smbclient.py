@@ -1,8 +1,5 @@
-from ast import pattern
-from re import search
 from smb.SMBConnection import SMBConnection
 from nmb.NetBIOS import NetBIOS
-from smb import smb2_constants
 
 
 class SmbClient():

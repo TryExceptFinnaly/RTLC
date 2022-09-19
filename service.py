@@ -36,9 +36,7 @@ class CopyUtilityNetShare(CopyUtility):
             self.log.info(msg)
         else:
             self.log.error(msg)
-            self.close()
-            self.timeout()
-            self.connect()
+        return connect            
 
     def close(self):
         SmbClient.close(self)
@@ -52,9 +50,11 @@ class CopyUtilityNetShare(CopyUtility):
     def scandir(self, path):
         if not self.echo():
             self.log.error('Echo request failed, reconnect...')
-            self.close()
-            self.timeout()
-            self.connect()
+            connect = False
+            while not connect:
+                self.close()
+                self.timeout()
+                connect = self.connect()
         SmbClient.scandir(self, path)
 
 
@@ -70,7 +70,8 @@ class MyService:
 
         if useNetShare:
             rtlc = CopyUtilityNetShare()
-            rtlc.connect()
+            if not rtlc.connect():
+                rtlc.exit()
         else:
             rtlc = CopyUtility()
 
