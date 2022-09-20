@@ -11,7 +11,7 @@ history = '''
             1.0.0.1: Исправлена проблема с завершением работы службы после 1000 попыток переподключения к сетевой шаре
 '''
 
-instruction = '''
+installation = '''
     1. Install to Windows(x64):
         a. Скачать 'dist/rtlc.exe'.
         b. Закинуть бинарь в рабочую директорию (Например: 'C:/rtlc/').
@@ -61,7 +61,7 @@ with open('README.md', mode='w', encoding=encoding) as readme:
     readme.write(f'# {name} {ver} \n')
     readme.write(history)
     readme.write(f'# Installation:\n')
-    readme.write(instruction)
+    readme.write(installation)
     readme.write(f'# Config:\n')
     readme.write(config)
     # with open('history.txt', mode='r', encoding=encoding) as history:

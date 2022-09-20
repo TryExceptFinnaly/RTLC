@@ -3,7 +3,7 @@
     History changed:
         1.0.0:
             1.0.0.1: Исправлена проблема с завершением работы службы после 1000 попыток переподключения к сетевой шаре
-# Instructions:
+# Installation:
 
     1. Install to Windows(x64):
         a. Скачать 'dist/rtlc.exe'.
