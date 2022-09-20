@@ -8,6 +8,9 @@ history = '''
     History changed:
         1.0.0:
             1.0.0.1: Исправлена проблема с завершением работы службы после 1000 попыток переподключения к сетевой шаре
+'''
+
+instruction = '''
     1. Install to Windows(x64):
         a. Скачать 'dist/rtlc.exe'.
         b. Закинуть бинарь в рабочую директорию (Например: 'C:/rtlc/').
@@ -45,5 +48,7 @@ pyinstaller_versionfile.create_versionfile(
 with open('README.md', mode='w', encoding=encoding) as readme:
     readme.write(f'# {name} {ver} \n')
     readme.write(history)
+    readme.write(f'Instructions:\n')
+    readme.write(instruction)
     # with open('history.txt', mode='r', encoding=encoding) as history:
     #     readme.write(history.read())
