@@ -50,7 +50,7 @@ pyinstaller_versionfile.create_versionfile(
     product_name=name)
 
 with open('README.md', mode='w', encoding=encoding) as readme:
-    readme.write(f'# {name} {ver} \n History: \n')
+    readme.write(f'# {name} {ver} \n')
     readme.write(history)
     readme.write(f'# Instructions:\n')
     readme.write(instruction)
