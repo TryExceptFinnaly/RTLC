@@ -33,6 +33,14 @@ config = '''
         [Paths]
         1. remote - путь до удалённой папки
         2. local - путь до локальной папки
+        [NetShare] - Only Windows!!!
+        1. use_network_share - подключение к сетевой шаре с помощью службы (True или False)
+        2. share_ip - IP или DOMAIN сетевой папки
+        3. share_name - Имя сетевой папки
+        4. user_name - Логин
+        5. user_password - Пароль
+        6. client_machine_name - Хостнейм локальной машины (cmd: hostname)
+        7. remote_machine_name - Хостнейм удалённой машины (Если не заполнять - программа узнает автоматически)
         [Logs]
         1. level - уровень логирования
         2. size - максимальный размер файла логов (в мегабайтах)
