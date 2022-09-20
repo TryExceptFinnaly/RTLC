@@ -60,7 +60,7 @@ pyinstaller_versionfile.create_versionfile(
 with open('README.md', mode='w', encoding=encoding) as readme:
     readme.write(f'# {name} {ver} \n')
     readme.write(history)
-    readme.write(f'# Instructions:\n')
+    readme.write(f'# Installation:\n')
     readme.write(instruction)
     readme.write(f'# Config:\n')
     readme.write(config)
