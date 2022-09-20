@@ -1,3 +1,4 @@
+from distutils.command.config import config
 import pyinstaller_versionfile
 
 name = 'RTLC'
@@ -20,6 +21,9 @@ instruction = '''
         a. Скачать файлы: 'rtlc.py, config.py, install_rtlc.sh'.
         b. Закинуть файлы в домашнюю директорию (Например: '/home/lins/').
         c. Выдать права: 'chmod 755 /home/lins/install_rtlc.sh', запустить его и следовать инструкции установочного скрипта.
+'''
+
+config = '''
     Config.ini:
         [Options]
         1. start_date - дата и время создания файлов от которых начинать сканирование (игнорируется при заданном параметре last_file).
@@ -48,7 +52,9 @@ pyinstaller_versionfile.create_versionfile(
 with open('README.md', mode='w', encoding=encoding) as readme:
     readme.write(f'# {name} {ver} \n')
     readme.write(history)
-    readme.write(f'Instructions:\n')
+    readme.write(f'# Instructions:\n')
     readme.write(instruction)
+    readme.write(f'# Config:\n')
+    readme.write(config)
     # with open('history.txt', mode='r', encoding=encoding) as history:
     #     readme.write(history.read())

@@ -3,7 +3,7 @@
     History changed:
         1.0.0:
             1.0.0.1: Исправлена проблема с завершением работы службы после 1000 попыток переподключения к сетевой шаре
-Instructions:
+# Instructions:
 
     1. Install to Windows(x64):
         a. Скачать 'dist/rtlc.exe'.
@@ -14,6 +14,8 @@ Instructions:
         a. Скачать файлы: 'rtlc.py, config.py, install_rtlc.sh'.
         b. Закинуть файлы в домашнюю директорию (Например: '/home/lins/').
         c. Выдать права: 'chmod 755 /home/lins/install_rtlc.sh', запустить его и следовать инструкции установочного скрипта.
+# Config:
+
     Config.ini:
         [Options]
         1. start_date - дата и время создания файлов от которых начинать сканирование (игнорируется при заданном параметре last_file).
