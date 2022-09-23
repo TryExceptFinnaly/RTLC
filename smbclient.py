@@ -70,7 +70,7 @@ class SmbClient():
     def scandir(self, path: str):
         try:
             scanDir = self.server.listPath(self.shareName, path)
-        except Exception as exc:
+        except:# Exception as exc:
             # return f'Exc:{exc},Sharename:{self.shareName},Path:{path}'
             self.connect()
         for entry in scanDir:

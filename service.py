@@ -36,7 +36,7 @@ class CopyUtilityNetShare(CopyUtility):
             self.log.info(msg)
         else:
             self.log.error(msg)
-        return connect            
+        return connect
 
     def close(self):
         SmbClient.close(self)
