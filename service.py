@@ -55,6 +55,7 @@ class CopyUtilityNetShare(CopyUtility):
                 self.close()
                 self.timeout()
                 connect = self.connect()
+        #self.log.info(SmbClient.scandir(self, path))
         SmbClient.scandir(self, path)
 
 
