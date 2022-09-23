@@ -1,9 +1,9 @@
 /build
 /local
-/remote
+/remote*
 /__pycache__
-config.ini
-dist/config.ini
+*rtlc.ini
+dist/*rtlc.ini
 /logs
 dist/logs/
 test.py

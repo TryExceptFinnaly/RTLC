@@ -1,17 +1,18 @@
-#Remote To Local Copy(RTLC)
+# Remote To Local Copy(RTLC)
 import logging
 import logging.handlers
 import os
 import shutil
 import sys
 import atexit
+import threading
 
 from uuid import uuid4
 from time import sleep, mktime, strptime, strftime, gmtime
 
 from config import Config
 
-CONFIG_NAME = 'config.ini'
+FORMAT = '[%(asctime)s]: %(levelname)s - %(message)s'
 
 
 def getModulePath() -> str:
@@ -27,13 +28,13 @@ def getLenSysArg() -> int:
 
 class CopyUtility():
 
-    def __init__(self):
+    def __init__(self, name):
         os.chdir(getModulePath())
 
-        FORMAT = '[%(asctime)s]: %(levelname)s - %(message)s'
         FOLDER_LOGS = 'Logs'
-        NAME_LOG = 'rtlc.log'
-        NAME_QUEUE = 'rtlc.queue'
+        CONFIG_NAME = f'{name}.ini'
+        NAME_LOG = f'{name}.log'
+        NAME_QUEUE = f'{name}.queue'
 
         if not os.path.exists(FOLDER_LOGS):
             try:
@@ -52,15 +53,15 @@ class CopyUtility():
 
         logging.basicConfig(handlers='')
 
-        mainHandler = logging.handlers.RotatingFileHandler(
+        self.mainHandler = logging.handlers.RotatingFileHandler(
             f'{FOLDER_LOGS}/{NAME_LOG}',
             maxBytes=SIZE_LOG,
             backupCount=self.config.logsBackups,
             encoding='utf-8')
-        mainHandler.setFormatter(logging.Formatter(FORMAT))
+        self.mainHandler.setFormatter(logging.Formatter(FORMAT))
 
-        self.log = logging.getLogger('rltc')
-        self.log.addHandler(mainHandler)
+        self.log = logging.getLogger(CONFIG_NAME)
+        self.log.addHandler(self.mainHandler)
 
         self.config.logsLevel = self.config.logsLevel.upper()
         if self.config.logsLevel not in [
@@ -129,11 +130,11 @@ class CopyUtility():
         atexit.register(self.end)
         self.log.info('Service started.')
 
-    @staticmethod
-    def getUseNetShare():
-        config = Config(os.path.join(getModulePath(), CONFIG_NAME))
-        config.load()
-        return config.useNetShare
+    # @staticmethod
+    # def getUseNetShare():
+    #     config = Config(os.path.join(getModulePath(), CONFIG_NAME))
+    #     config.load()
+    #     return config.useNetShare
 
     def loadQueue(self):
         if os.path.exists(self.nameQueue):
@@ -209,15 +210,32 @@ class CopyUtility():
     def timeout(self):
         sleep(self.refreshTime)
 
+    def run(self):
+        while True:
+            self.walker()
+            self.timeout()
+
     def exit(self):
         sys.exit()
 
     def end(self):
+        # self.running = False
         self.log.info('Service stopped.')
 
 
 if __name__ == '__main__':
-    rtlc = CopyUtility()
+    rtlc = []
+    with os.scandir('./') as scanDir:
+        for entry in scanDir:
+            if entry.is_file(
+                    follow_symlinks=False) and entry.name.endswith('rtlc.ini'):
+                rtlc.append(entry.name.rpartition('.')[0])
+    if not rtlc:
+        rtlc.append('rtlc')
+    for rtlc in rtlc[:]:
+        rtlc = CopyUtility(rtlc)
+        rtlc.thread = threading.Thread(target=rtlc.run, daemon=True)
+        rtlc.thread.start()
+
     while True:
-        rtlc.walker()
-        rtlc.timeout()
+        pass
