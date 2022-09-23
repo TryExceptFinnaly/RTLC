@@ -60,7 +60,7 @@ class CopyUtility():
             encoding='utf-8')
         self.mainHandler.setFormatter(logging.Formatter(FORMAT))
 
-        self.log = logging.getLogger(CONFIG_NAME)
+        self.log = logging.getLogger(name)
         self.log.addHandler(self.mainHandler)
 
         self.config.logsLevel = self.config.logsLevel.upper()
@@ -225,7 +225,7 @@ class CopyUtility():
 
 if __name__ == '__main__':
     rtlc = []
-    with os.scandir('./') as scanDir:
+    with os.scandir(os.path.join(getModulePath())) as scanDir:
         for entry in scanDir:
             if entry.is_file(
                     follow_symlinks=False) and entry.name.endswith('rtlc.ini'):
