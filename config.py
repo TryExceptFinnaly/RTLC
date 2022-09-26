@@ -1,5 +1,6 @@
 import configparser
 
+ENCODING_INI = 'utf-8'
 
 class Config:
 
@@ -49,7 +50,7 @@ class Config:
             return fallback
 
     def load(self):
-        self.config.read(self.ini)
+        self.config.read(self.ini, encoding=ENCODING_INI)
         self.startDate = self.getstring('Options',
                                         'start_date',
                                         fallback=self.startDate)
@@ -121,8 +122,8 @@ class Config:
             'backups': self.logsBackups
         }
         try:
-            with open(self.ini, 'w', encoding='utf-8') as configfile:
+            with open(self.ini, 'w', encoding=ENCODING_INI) as configfile:
                 self.config.write(configfile)
-                return (f'Building configuration file completed successfully.')
+                return ('Building configuration file completed successfully.')
         except Exception as exc:
             return (f'Error building configuration file "{exc}": {self.ini}')
