@@ -68,10 +68,9 @@ class MyService:
         self.running = True
 
         rtlc = loadListIni()
-        useNetShare = CopyUtility.getUseNetShare(rtlc[0])
 
         for rtlc in rtlc[:]:
-            if useNetShare:
+            if CopyUtility.getUseNetShare(rtlc):
                 rtlc = CopyUtilityNetShare(rtlc)
                 if not rtlc.connect():
                     rtlc.exit()
