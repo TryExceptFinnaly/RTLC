@@ -8,8 +8,8 @@ from smbclient import SmbClient
 
 class CopyUtilityNetShare(CopyUtility):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name):
+        super().__init__(name)
         self.shareIP = self.config.shareIP
         self.shareName = self.config.shareName
 
