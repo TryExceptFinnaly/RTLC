@@ -2,12 +2,14 @@ from distutils.command.config import config
 import pyinstaller_versionfile
 
 name = 'RTLC'
-ver = '1.0.0.1'
+ver = '1.0.0.2'
 encoding = 'UTF-8'
 
 history = '''
     History changed:
         1.0.0:
+            1.0.0.2: Добавлена многопоточность.
+            Для активации дополнительного потока необходимо добавить еще один конфиг(Формат: '*rtlc.ini')
             1.0.0.1: Исправлена проблема с завершением работы службы после 1000 попыток переподключения к сетевой шаре
 '''
 

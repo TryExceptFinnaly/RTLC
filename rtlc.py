@@ -26,6 +26,18 @@ def getLenSysArg() -> int:
     return len(sys.argv)
 
 
+def loadListIni():
+    rtlc = []
+    with os.scandir(os.path.join(getModulePath())) as scanDir:
+        for entry in scanDir:
+            if entry.is_file(
+                    follow_symlinks=False) and entry.name.endswith('rtlc.ini'):
+                rtlc.append(entry.name.rpartition('.')[0])
+    if not rtlc:
+        rtlc.append('rtlc')
+    return rtlc
+
+
 class CopyUtility():
 
     def __init__(self, name):
@@ -130,11 +142,11 @@ class CopyUtility():
         atexit.register(self.end)
         self.log.info('Service started.')
 
-    # @staticmethod
-    # def getUseNetShare():
-    #     config = Config(os.path.join(getModulePath(), CONFIG_NAME))
-    #     config.load()
-    #     return config.useNetShare
+    @staticmethod
+    def getUseNetShare(ini):
+        config = Config(os.path.join(getModulePath(), f'{ini}.ini'))
+        config.load()
+        return config.useNetShare
 
     def loadQueue(self):
         if os.path.exists(self.nameQueue):
@@ -215,6 +227,10 @@ class CopyUtility():
             self.walker()
             self.timeout()
 
+    def createThread(self):
+        self.thread = threading.Thread(target=self.run, daemon=True)
+        self.thread.start()
+
     def exit(self):
         sys.exit()
 
@@ -224,18 +240,11 @@ class CopyUtility():
 
 
 if __name__ == '__main__':
-    rtlc = []
-    with os.scandir(os.path.join(getModulePath())) as scanDir:
-        for entry in scanDir:
-            if entry.is_file(
-                    follow_symlinks=False) and entry.name.endswith('rtlc.ini'):
-                rtlc.append(entry.name.rpartition('.')[0])
-    if not rtlc:
-        rtlc.append('rtlc')
+
+    rtlc = loadListIni()
     for rtlc in rtlc[:]:
         rtlc = CopyUtility(rtlc)
-        rtlc.thread = threading.Thread(target=rtlc.run, daemon=True)
-        rtlc.thread.start()
+        rtlc.createThread()
 
     while True:
         pass

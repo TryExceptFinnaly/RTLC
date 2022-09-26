@@ -2,7 +2,7 @@ import win32serviceutil  # ServiceFramework and commandline helper
 import win32service  # Events
 import servicemanager  # Simple setup and logging
 
-from rtlc import CopyUtility, getLenSysArg
+from rtlc import CopyUtility, getLenSysArg, loadListIni
 from smbclient import SmbClient
 
 
@@ -67,20 +67,23 @@ class MyService:
     def run(self):
         self.running = True
 
-        useNetShare = CopyUtility.getUseNetShare()
+        rtlc = loadListIni()
+        useNetShare = CopyUtility.getUseNetShare(rtlc[0])
 
-        if useNetShare:
-            rtlc = CopyUtilityNetShare()
-            if not rtlc.connect():
-                rtlc.exit()
-        else:
-            rtlc = CopyUtility()
+        for rtlc in rtlc[:]:
+            if useNetShare:
+                rtlc = CopyUtilityNetShare(rtlc)
+                if not rtlc.connect():
+                    rtlc.exit()
+            else:
+                rtlc = CopyUtility(rtlc)
+
+            rtlc.createThread()
 
         servicemanager.LogInfoMsg('Service started successfully.')
 
         while self.running:
-            rtlc.walker()
-            rtlc.timeout()
+            pass
 
 
 class MyServiceFramework(win32serviceutil.ServiceFramework):
