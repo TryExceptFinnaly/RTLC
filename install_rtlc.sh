@@ -22,19 +22,18 @@ Description=$SERVICE_NAME.service\n\n\
 Type=simple\n\n\
 User=$RTLC_USER\n\
 Group=$RTLC_USER\n\n\
-ExecStart=/usr/bin/python3 $INSTALL_PATH/rtlc.py\n\n\
+ExecStart=/usr/bin/python3 $INSTALL_PATH/rtlc\n\n\
 [Install]\n\
 WantedBy=multi-user.target' > /etc/systemd/system/$SERVICE_NAME.service"
 
 echo $PASS | sudo -S install -d -o lins -g lins -m 0755 $INSTALL_PATH
 
-cp ./config.py ./rtlc.py $INSTALL_PATH 
-chmod 755 $INSTALL_PATH/*.py
-#chown lins:lins $INSTALL_PATH/*.py
+cp ./rtlc $INSTALL_PATH 
+chmod 755 $INSTALL_PATH/rtlc
 
 echo $PASS | sudo -S systemctl daemon-reload
 echo $PASS | sudo -S systemctl enable $SERVICE_NAME
 echo $PASS | sudo -S systemctl start $SERVICE_NAME
 echo $PASS | sudo -S systemctl status $SERVICE_NAME
 
-echo 'File "config.ini" not found, modify the generated config file ("'$INSTALL_PATH'/config.ini")'
+echo 'File "config.ini" not found, modify the generated config file ("'$INSTALL_PATH'")'
