@@ -26,7 +26,7 @@ ExecStart=/usr/bin/python3 $INSTALL_PATH/rtlc\n\n\
 [Install]\n\
 WantedBy=multi-user.target' > /etc/systemd/system/$SERVICE_NAME.service"
 
-echo $PASS | sudo -S install -d -o lins -g lins -m 0755 $INSTALL_PATH
+echo $PASS | sudo -S install -d -o $RTLC_USER -g $RTLC_USER -m 0755 $INSTALL_PATH
 
 cp ./rtlc $INSTALL_PATH 
 chmod 755 $INSTALL_PATH/rtlc
