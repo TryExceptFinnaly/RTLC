@@ -22,7 +22,7 @@ Description=$SERVICE_NAME.service\n\n\
 Type=simple\n\n\
 User=$RTLC_USER\n\
 Group=$RTLC_USER\n\n\
-ExecStart=/usr/bin/python3 $INSTALL_PATH/rtlc\n\n\
+ExecStart=$INSTALL_PATH/rtlc\n\n\
 [Install]\n\
 WantedBy=multi-user.target' > /etc/systemd/system/$SERVICE_NAME.service"
 
